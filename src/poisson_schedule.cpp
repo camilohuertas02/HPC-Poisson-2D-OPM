@@ -1,11 +1,9 @@
-// Simulación de la ecuación de Poisson en 2D utilizando diferencias finitas
-// Usa condiciones de frontera de Dirichlet y un término fuente con forma gaussiana
-
 #include <iostream>
 #include <vector>
 #include <cmath>
 #include <algorithm>
 #include <fstream>
+#include <omp.h>
 
 const double x0 = 1.0, xf = 2.0;
 const double y0 = 0.0, yf = 2.0;
@@ -30,7 +28,6 @@ void initialize_grid(int M, int N, std::vector<std::vector<double>>& T, std::vec
         double y = y0 + j*k;
         T[0][j] = std::pow(1.0 - y, 2);
         T[M][j] = std::pow(2.0 - y, 2);
-
     }
 }
 
@@ -38,7 +35,7 @@ void initialize_grid(int M, int N, std::vector<std::vector<double>>& T, std::vec
 void poisson_source(int M, int N, std::vector<std::vector<double>>& source, double h, double k) {
     for (int i = 0; i <= M; ++i){
         for (int j = 0; j <= N; ++j){
-            source[i][j] = 4.0
+            source[i][j] = 4.0;
         }
     }       
 }
@@ -49,22 +46,27 @@ void solve_poisson(std::vector<std::vector<double>>& T, const std::vector<std::v
 
     while (delta > TOL) {
         delta = 0.0;
-        for (int i = 1; i < M; ++i) {
-            for (int j = 1; j < N; ++j) {
-                double T_new = (
-                    ((T[i + 1][j] + T[i - 1][j]) * k * k) +
-                    ((T[i][j + 1] + T[i][j - 1]) * h * h) -
-                    (source[i][j] * h * h * k * k)) /
-                    (2.0 * (h * h + k * k));
+        
+        // Actividad 4: parallel y for separados
+        #pragma omp parallel
+        {
+            // Cambia schedule(static) por schedule(dynamic) para la segunda prueba
+            #pragma omp for schedule(static) reduction(max:delta)
+            for (int i = 1; i < M; ++i) {
+                for (int j = 1; j < N; ++j) {
+                    double T_new = (
+                        ((T[i + 1][j] + T[i - 1][j]) * k * k) +
+                        ((T[i][j + 1] + T[i][j - 1]) * h * h) -
+                        (source[i][j] * h * h * k * k)) /
+                        (2.0 * (h * h + k * k));
 
-                delta = std::max(delta, std::abs(T_new - T[i][j]));
-                T[i][j] = T_new;
+                    delta = std::max(delta, std::abs(T_new - T[i][j]));
+                    T[i][j] = T_new;
+                }
             }
-        }
+        } // Fin de la región paralela
     }
 }
-
-
 
 // Exporta los resultados de la matriz T a un archivo .dat
 void export_to_file(const std::vector<std::vector<double>>& T, double h, double k, int M, int N, const std::string& filename) {
@@ -91,9 +93,15 @@ int main() {
 
     initialize_grid(M, N, T, source, h, k);
     poisson_source(M, N, source, h, k);
+    
+    double start_time = omp_get_wtime();
+    
     solve_poisson(T, source, M, N, h, k);
+    
+    double end_time = omp_get_wtime();
+    std::cout << "Tiempo de resolucion con schedule(static): " << end_time - start_time << " segundos.\n";
 
-    export_to_file(T, h, k, M, N, "solucion_poisson.dat");
+    export_to_file(T, h, k, M, N, "solucion_poisson_schedule.dat");
 
     std::cout << "Simulación completada." << std::endl;
     return 0;
