@@ -4,35 +4,46 @@
 #include <algorithm>
 #include <fstream>
 #include <omp.h>
+#include <string>
 
-const double x0 = 1.0, xf = 2.0;
-const double y0 = 0.0, yf = 2.0;
-const double TOL = 1e-6;
+/**
+ * @file poisson_task-act7.cpp
+ * @brief Resolución de Poisson 2D mediante el modelo de tareas (Tasks) de OpenMP.
+ * Divide el dominio en bloques procesados de forma asíncrona para mejorar 
+ * el balanceo de carga dinámico.
+ */
 
-// Inicializa las matrices de la grilla y las condiciones de frontera
-void initialize_grid(int M, int N, std::vector<std::vector<double>>& T, std::vector<std::vector<double>>& source, double& h, double& k) {
-    h = (xf - x0) / M;
-    k = (yf - y0) / N;
+const double x_start = 1.0, x_end = 2.0;
+const double y_start = 0.0, y_end = 2.0;
 
-    T.resize(M + 1, std::vector<double>(N + 1, 0.0));
-    source.resize(M + 1, std::vector<double>(N + 1, 0.0));
+// Contador de iteraciones global
+int iterations = 0;
 
-    // Frontera inferior (y = 0) y superior (y = 2)
+void initialize_grid(int M, int N,
+                     std::vector<std::vector<double>>& T,
+                     std::vector<std::vector<double>>& source,
+                     double& h, double& k) 
+{
+    h = (x_end - x_start) / M;
+    k = (y_end - y_start) / N;
+
+    T.assign(M + 1, std::vector<double>(N + 1, 0.0));
+    source.assign(M + 1, std::vector<double>(N + 1, 0.0));
+
     for (int i = 0; i <= M; ++i){
-        double x = x0 + i*h;
+        double x = x_start + i*h;
         T[i][0] = std::pow(x, 2);
         T[i][N] = std::pow(x - 2.0, 2);
     }
-    // Frontera izquierda(x=1) y derecha (x=2)
     for (int j = 0; j <= N; ++j){
-        double y = y0 + j*k;
+        double y = y_start + j*k;
         T[0][j] = std::pow(1.0 - y, 2);
         T[M][j] = std::pow(2.0 - y, 2);
     }
 }
 
-// Calcula el término fuente como una distribución gaussiana
-void poisson_source(int M, int N, std::vector<std::vector<double>>& source, double h, double k) {
+void poisson_source(int M, int N, std::vector<std::vector<double>>& source) 
+{
     for (int i = 0; i <= M; ++i){
         for (int j = 0; j <= N; ++j){
             source[i][j] = 4.0;
@@ -40,96 +51,100 @@ void poisson_source(int M, int N, std::vector<std::vector<double>>& source, doub
     }       
 }
 
-// Resuelve la ecuación de Poisson iterativamente usando tasks
-void solve_poisson(std::vector<std::vector<double>>& T, const std::vector<std::vector<double>>& source, int M, int N, double h, double k) {
+void solve_poisson(std::vector<std::vector<double>>& T,
+                   const std::vector<std::vector<double>>& source,
+                   int M, int N, double h, double k, double TOL_param) 
+{
     double delta = 1.0;
-    int block_size = 10; // Tamaño del bloque (puedes ajustarlo para experimentar)
+    const int block_size = 16; // Tamaño de bloque optimizado para caché L1/L2
 
-    while (delta > TOL) {
+    while (delta > TOL_param) {
         delta = 0.0;
-        
+
         #pragma omp parallel shared(T, source, delta)
         {
-            // Solo un hilo genera las tareas
             #pragma omp single
             {
-                // Dividimos la grilla en bloques
                 for (int bi = 1; bi < M; bi += block_size) {
                     for (int bj = 1; bj < N; bj += block_size) {
-                        
-                        // Creamos una tarea por cada bloque
-                        #pragma omp task shared(T, source, delta) firstprivate(bi, bj)
+                        #pragma omp task firstprivate(bi, bj) shared(T, source, delta)
                         {
                             double local_delta = 0.0;
-                            
-                            // Límites del bloque actual, asegurando no salirnos de M y N
                             int i_end = std::min(bi + block_size, M);
                             int j_end = std::min(bj + block_size, N);
 
                             for (int i = bi; i < i_end; ++i) {
                                 for (int j = bj; j < j_end; ++j) {
-                                    double T_new = (
+                                    double T_old = T[i][j];
+                                    T[i][j] = (
                                         ((T[i + 1][j] + T[i - 1][j]) * k * k) +
                                         ((T[i][j + 1] + T[i][j - 1]) * h * h) -
                                         (source[i][j] * h * h * k * k)) /
                                         (2.0 * (h * h + k * k));
 
-                                    local_delta = std::max(local_delta, std::abs(T_new - T[i][j]));
-                                    T[i][j] = T_new;
+                                    double diff = std::abs(T[i][j] - T_old);
+                                    if (diff > local_delta) local_delta = diff;
                                 }
                             }
 
-                            // Actualizamos el delta global de forma segura
                             #pragma omp critical
                             {
-                                delta = std::max(delta, local_delta);
+                                if (local_delta > delta) delta = local_delta;
                             }
-                        } // Fin de la directiva task
+                        }
                     }
                 }
-                
-                // Esperamos a que todas las tareas de esta iteración terminen
-                #pragma omp taskwait
-            } // Fin de single (tiene una barrera implícita)
-        } // Fin de parallel
+                #pragma omp taskwait 
+                iterations++; // Se incrementa tras sincronizar todas las tareas del paso
+            }
+        }
     }
 }
 
-// Exporta los resultados de la matriz T a un archivo .dat
-void export_to_file(const std::vector<std::vector<double>>& T, double h, double k, int M, int N, const std::string& filename) {
+void export_to_file(const std::vector<std::vector<double>>& T,
+                    double h, double k, int M, int N,
+                    const std::string& filename) 
+{
     std::ofstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "No se pudo abrir el archivo para escritura." << std::endl;
-        return;
-    }
+    if (!file.is_open()) return;
+
     for (int i = 0; i <= M; ++i) {
         for (int j = 0; j <= N; ++j) {
-            double x = x0 + i * h;
-            double y = y0 + j * k;
+            double x = x_start + i*h;
+            double y = y_start + j*k;
             file << x << "\t" << y << "\t" << T[i][j] << "\n";
         }
     }
     file.close();
-    std::cout << "Resultados exportados a " << filename << std::endl;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     int M = 50, N = 50;
+    double TOL_val = 1e-6;
+
+    if (argc >= 4) {
+        M = std::stoi(argv[1]);
+        N = std::stoi(argv[2]);
+        TOL_val = std::stod(argv[3]);
+    }
+
     double h, k;
     std::vector<std::vector<double>> T, source;
 
     initialize_grid(M, N, T, source, h, k);
-    poisson_source(M, N, source, h, k);
-    
+    poisson_source(M, N, source);
+
     double start_time = omp_get_wtime();
-    
-    solve_poisson(T, source, M, N, h, k);
-    
+    solve_poisson(T, source, M, N, h, k, TOL_val);
     double end_time = omp_get_wtime();
-    std::cout << "Tiempo con task (bloques): " << end_time - start_time << " segundos.\n";
 
-    export_to_file(T, h, k, M, N, "solucion_poisson_task.dat");
+    std::string filename = "data/solucion_poisson_task.dat";
+    export_to_file(T, h, k, M, N, filename);
 
-    std::cout << "Simulación completada." << std::endl;
+    // Salida estandarizada e impecable
+    std::cout << "Programa: poisson_task-act7 | Tiempo_total: " 
+              << (end_time - start_time) << " s | Iteraciones: " 
+              << iterations << " | Archivo: " << filename << std::endl;
+
     return 0;
 }

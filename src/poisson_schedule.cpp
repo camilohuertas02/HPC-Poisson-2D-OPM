@@ -4,35 +4,47 @@
 #include <algorithm>
 #include <fstream>
 #include <omp.h>
+#include <string>
 
-const double x0 = 1.0, xf = 2.0;
-const double y0 = 0.0, yf = 2.0;
-const double TOL = 1e-6;
+/**
+ * @file poisson_schedule.cpp
+ * @brief Resolución de Poisson 2D usando OpenMP con planificación estática.
+ * El schedule(static) divide las iteraciones en bloques de tamaño fijo 
+ * repartidos de forma equitativa entre los hilos al inicio.
+ */
 
-// Inicializa las matrices de la grilla y las condiciones de frontera
-void initialize_grid(int M, int N, std::vector<std::vector<double>>& T, std::vector<std::vector<double>>& source, double& h, double& k) {
-    h = (xf - x0) / M;
-    k = (yf - y0) / N;
+// Definición de la grilla (Constantes de dominio)
+const double x_start = 1.0, x_end = 2.0;
+const double y_start = 0.0, y_end = 2.0;
 
-    T.resize(M + 1, std::vector<double>(N + 1, 0.0));
-    source.resize(M + 1, std::vector<double>(N + 1, 0.0));
+// Variable global para contar iteraciones
+int iterations = 0;
 
-    // Frontera inferior (y = 0) y superior (y = 2)
+void initialize_grid(int M, int N, std::vector<std::vector<double>>& T,
+                     std::vector<std::vector<double>>& source,
+                     double& h, double& k) 
+{
+    h = (x_end - x_start) / M;
+    k = (y_end - y_start) / N;
+
+    T.assign(M + 1, std::vector<double>(N + 1, 0.0));
+    source.assign(M + 1, std::vector<double>(N + 1, 0.0));
+
     for (int i = 0; i <= M; ++i){
-        double x = x0 + i*h;
+        double x = x_start + i*h;
         T[i][0] = std::pow(x, 2);
         T[i][N] = std::pow(x - 2.0, 2);
     }
-    // Frontera izquierda(x=1) y derecha (x=2)
+
     for (int j = 0; j <= N; ++j){
-        double y = y0 + j*k;
+        double y = y_start + j*k;
         T[0][j] = std::pow(1.0 - y, 2);
         T[M][j] = std::pow(2.0 - y, 2);
     }
 }
 
-// Calcula el término fuente como una distribución gaussiana
-void poisson_source(int M, int N, std::vector<std::vector<double>>& source, double h, double k) {
+void poisson_source(int M, int N, std::vector<std::vector<double>>& source) 
+{
     for (int i = 0; i <= M; ++i){
         for (int j = 0; j <= N; ++j){
             source[i][j] = 4.0;
@@ -40,69 +52,82 @@ void poisson_source(int M, int N, std::vector<std::vector<double>>& source, doub
     }       
 }
 
-// Resuelve la ecuación de Poisson iterativamente hasta convergencia
-void solve_poisson(std::vector<std::vector<double>>& T, const std::vector<std::vector<double>>& source, int M, int N, double h, double k) {
+void solve_poisson(std::vector<std::vector<double>>& T,
+                   const std::vector<std::vector<double>>& source,
+                   int M, int N, double h, double k, double TOL_param) 
+{
     double delta = 1.0;
 
-    while (delta > TOL) {
+    while (delta > TOL_param) {
         delta = 0.0;
-        
-        // Actividad 4: parallel y for separados
+
         #pragma omp parallel
         {
-            // Cambia schedule(static) por schedule(dynamic) para la segunda prueba
             #pragma omp for schedule(static) reduction(max:delta)
             for (int i = 1; i < M; ++i) {
                 for (int j = 1; j < N; ++j) {
-                    double T_new = (
-                        ((T[i + 1][j] + T[i - 1][j]) * k * k) +
-                        ((T[i][j + 1] + T[i][j - 1]) * h * h) -
-                        (source[i][j] * h * h * k * k)) /
-                        (2.0 * (h * h + k * k));
+                    double T_old = T[i][j];
+                    T[i][j] = (
+                        ((T[i+1][j] + T[i-1][j]) * k*k) +
+                        ((T[i][j+1] + T[i][j-1]) * h*h) -
+                        (source[i][j] * h*h*k*k)
+                    ) / (2.0*(h*h + k*k));
 
-                    delta = std::max(delta, std::abs(T_new - T[i][j]));
-                    T[i][j] = T_new;
+                    double diff = std::abs(T[i][j] - T_old);
+                    if (diff > delta) delta = diff;
                 }
             }
-        } // Fin de la región paralela
+        }
+        iterations++;
     }
 }
 
-// Exporta los resultados de la matriz T a un archivo .dat
-void export_to_file(const std::vector<std::vector<double>>& T, double h, double k, int M, int N, const std::string& filename) {
+void export_to_file(const std::vector<std::vector<double>>& T,
+                    double h, double k, int M, int N,
+                    const std::string& filename) 
+{
     std::ofstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "No se pudo abrir el archivo para escritura." << std::endl;
-        return;
-    }
-    for (int i = 0; i <= M; ++i) {
-        for (int j = 0; j <= N; ++j) {
-            double x = x0 + i * h;
-            double y = y0 + j * k;
+    if (!file.is_open()) return;
+
+    for (int i = 0; i <= M; ++i){
+        for (int j = 0; j <= N; ++j){
+            double x = x_start + i*h;
+            double y = y_start + j*k;
             file << x << "\t" << y << "\t" << T[i][j] << "\n";
         }
     }
     file.close();
-    std::cout << "Resultados exportados a " << filename << std::endl;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    // Parámetros por defecto
     int M = 50, N = 50;
+    double TOL_val = 1e-6;
+
+    // Captura de argumentos del Makefile
+    if (argc >= 4) {
+        M = std::stoi(argv[1]);
+        N = std::stoi(argv[2]);
+        TOL_val = std::stod(argv[3]);
+    }
+
     double h, k;
     std::vector<std::vector<double>> T, source;
 
     initialize_grid(M, N, T, source, h, k);
-    poisson_source(M, N, source, h, k);
-    
+    poisson_source(M, N, source);
+
     double start_time = omp_get_wtime();
-    
-    solve_poisson(T, source, M, N, h, k);
-    
+    solve_poisson(T, source, M, N, h, k, TOL_val);
     double end_time = omp_get_wtime();
-    std::cout << "Tiempo de resolucion con schedule(static): " << end_time - start_time << " segundos.\n";
 
-    export_to_file(T, h, k, M, N, "solucion_poisson_schedule.dat");
+    std::string filename = "data/solucion_poisson_schedule.dat";
+    export_to_file(T, h, k, M, N, filename);
 
-    std::cout << "Simulación completada." << std::endl;
+    // Salida estandarizada impecable
+    std::cout << "Programa: poisson_schedule | Tiempo_total: "
+              << (end_time - start_time) << " s | Iteraciones: "
+              << iterations << " | Archivo: " << filename << std::endl;
+
     return 0;
 }

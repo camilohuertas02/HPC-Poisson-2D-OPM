@@ -1,0 +1,19 @@
+
+==== Ejecutando poisson_serial ====
+Programa: poisson_serial | Tiempo_total: 0.684412 s | Iteraciones: 11415 | Archivo: data/solucion_poisson_serial.dat
+==== Ejecutando poisson_parallel_for-act1 ====
+Programa: poisson_parallel_for-act1 | Tiempo_total: 0.169373 s | Iteraciones: 11408 | Archivo: data/solucion_poisson_parallel.dat
+==== Ejecutando poisson_collapse-act2 ====
+Programa: poisson_collapse-act2 | Tiempo_total: 0.141987 s | Iteraciones: 11408 | Archivo: data/solucion_poisson_collapse.dat
+==== Ejecutando poisson_sections-act3 ====
+Programa: poisson_sections-act3 | Tiempo_total: 0.135058 s | Iteraciones: 11408 | Archivo: data/solucion_poisson_sections.dat
+==== Ejecutando poisson_schedule ====
+Programa: poisson_schedule | Tiempo_total: 0.12057 s | Iteraciones: 11408 | Archivo: data/solucion_poisson_schedule.dat
+==== Ejecutando poisson_sync ====
+Programa: poisson_sync | Tiempo_total: 0.142109 s | Iteraciones: 11408 | Archivo: data/solucion_poisson_sync.dat
+==== Ejecutando poisson_critical-act6 ====
+Programa: poisson_critical-act6 | Tiempo_total: 0.150719 s | Iteraciones: 11408 | Archivo: data/solucion_poisson_critical.dat
+==== Ejecutando poisson_atomic-act6 ====
+Programa: poisson_atomic-act6 | Tiempo: 0.123138 s | Iteraciones: 11408 | Archivo: data/solucion_poisson_atomic.dat
+==== Ejecutando poisson_task-act7 ====
+Programa: poisson_task-act7 | Tiempo_total: 1.99805 s | Iteraciones: 11415 | Archivo: data/solucion_poisson_task.dat
