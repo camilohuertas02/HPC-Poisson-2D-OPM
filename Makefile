@@ -60,4 +60,27 @@ clean:
 	rm -rf $(DATA_DIR)/*.dat
 	rm -f *.dat
 
+# Regla de visualización profesional
+plot:
+	@echo "[HPC] Generando visualización con Gnuplot..."
+	gnuplot plot_analisis.gp
+	@echo "[SUCCESS] Gráfica generada en data/analisis_riguroso.png"
+
+# Directorios de trabajo
+DATA_DIR = data
+IMAG_DIR = imag
+
+# Regla maestra de visualización
+plot_all:
+	@mkdir -p $(IMAG_DIR)
+	@echo "[HPC] Iniciando renderizado masivo de resultados..."
+	@for file in $(DATA_DIR)/*.dat; do \
+		base=$$(basename $$file .dat); \
+		echo "[PLOT] Procesando $$file -> $(IMAG_DIR)/$$base.png"; \
+		gnuplot -e "FILE_IN='$$file'; FILE_OUT='$(IMAG_DIR)/$$base.png'" plot_generico.gp; \
+	done
+	@echo "[SUCCESS] Todas las imágenes han sido guardadas en /$(IMAG_DIR)"
+
+
 .PHONY: all clean directories run
+
