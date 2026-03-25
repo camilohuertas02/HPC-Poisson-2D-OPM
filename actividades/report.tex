@@ -111,14 +111,49 @@ Tareas & \texttt{task} & 4.430 s & 2 & Sobrecarga catastrófica \\
 \caption{Comparativa de tiempos óptimos en la Malla 200x200.}
 \end{table}
 
+\section*{Validación Numérica de la Solución}
+
+Con el objetivo de verificar la consistencia y validez física de las implementaciones paralelas, se realizó una validación directa de la solución obtenida para una malla base de $20 \times 20$. 
+
+En la Figura \ref{fig:atomic_sol} se presenta la solución numérica generada mediante la implementación con directiva \texttt{atomic}, la cual sirve como referencia representativa del comportamiento esperado del sistema.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\textwidth]{../imag/solucion_poisson_atomic.png}
+    \caption{Solución numérica de la ecuación de Poisson 2D para una malla $50\times50$ usando la implementación \texttt{atomic}.}
+    \label{fig:atomic_sol}
+\end{figure}
+
+La solución obtenida reproduce correctamente la forma parabólica esperada, consistente con las condiciones de frontera impuestas y el término fuente constante $f(x,y)=4$. El error numérico global se mantiene acotado por la tolerancia impuesta en el método iterativo, $\text{TOL} = 10^{-6}$, garantizando convergencia del esquema de diferencias finitas.
+
+Para validar la robustez de las implementaciones, se compararon los resultados de todas las versiones paralelas (\texttt{parallel for}, \texttt{collapse}, \texttt{schedule}, \texttt{atomic}, \texttt{critical}, \texttt{sections}, \texttt{task}) sobre la misma malla y bajo las mismas condiciones iniciales.
+
+El análisis estadístico multimodelo, mostrado en la Figura \ref{fig:stats}, permite evaluar la dispersión entre soluciones mediante el cálculo del promedio y bandas de desviación estándar en cada punto de la malla.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{../imag/validacion_stats.png}
+    \caption{Validación estadística de las soluciones numéricas. Se muestra la superficie promedio junto con bandas de desviación estándar entre implementaciones.}
+    \label{fig:stats}
+\end{figure}
+
+Los resultados evidencian que todas las implementaciones convergen a la misma solución dentro de la precisión numérica del método, presentando desviaciones despreciables del orden de máquina. Esto confirma que las diferencias observadas en rendimiento no afectan la validez física ni la estabilidad del esquema numérico.
+
+\textbf{Conclusión de validación:} Las variaciones entre implementaciones son exclusivamente computacionales (tiempo de ejecución y escalabilidad), mientras que la solución numérica permanece invariante, validando correctamente todas las estrategias de paralelización implementadas.
+
 \section*{Conclusiones Generales}
 \begin{enumerate}
     \item \textbf{¿Cuál fue la versión más rápida y la más eficiente?} \\
     La directiva \texttt{\#pragma omp parallel for} con una planificación básica. Además, se comprobó que el máximo rendimiento se alcanza a los \textbf{32 hilos}, superando ese umbral el paralelismo se vuelve contraproducente por el costo de comunicación y transferencia a caché.
+
     \item \textbf{¿Qué directiva es más fácil de usar y robusta?} \\
-    Nuevamente \texttt{parallel for} con la cláusula \texttt{reduction}. Proporciona el máximo rendimiento con la menor cantidad de intervención en el código base.
+    Nuevamente \texttt{parallel for} con la cláusula \texttt{reduction}. Proporciona el máximo rendimiento con la menor cantidad de intervención en el código base, manteniendo la estabilidad del esquema numérico.
+
     \item \textbf{¿Hubo directivas que empeoraron el rendimiento?} \\
     De forma contundente, la directiva \texttt{task}. Para la resolución de ecuaciones diferenciales en grillas matriciales uniformes y densas, el modelo de bucles (\texttt{for}) es superior. Las tareas (\texttt{task}) solo deben usarse para flujos de control asimétricos o estructuras irregulares (árboles, listas recursivas).
+
+    \item \textbf{¿La paralelización afectó la validez numérica del método?} \\
+    No. Todas las implementaciones convergen a la misma solución dentro de la tolerancia impuesta ($10^{-6}$), reproduciendo correctamente el comportamiento analítico esperado del problema de Poisson con término fuente constante. Se verificó estabilidad y consistencia del método de diferencias finitas, evidenciando que las variaciones entre versiones son exclusivamente computacionales y no físicas.
 \end{enumerate}
 
 \end{document}

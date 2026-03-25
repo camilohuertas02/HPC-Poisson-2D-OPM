@@ -19,7 +19,7 @@ TOL ?= 1e-6
 
 # --- PARÁMETROS DE EXPERIMENTACIÓN (Nuevos) ---
 THREADS_TEST = 1 2 4 8 16 32 64 80
-GRID_SIZES = 50 100 200
+GRID_SIZES = 50 
 
 # Nombres base de los ejecutables
 TARGETS = \
@@ -44,6 +44,9 @@ directories:
 
 $(BIN_DIR)/%: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@
+
+$(BIN_DIR)/post_stats: tools/post_stats.c
+	$(CXX) -O3 $< -o $@
 
 # ------------------------------------------------
 # Regla de ejecución simple
@@ -97,6 +100,23 @@ plot_hpc: directories
 	@echo "[SUCCESS] Gráficas de rendimiento en /$(IMAG_DIR)"
 
 plot_all: plot_fisica plot_hpc
+
+
+# ------------------------------------------------
+# Regla: Post-procesamiento estadístico + visualización
+# ------------------------------------------------
+
+stats: directories $(BIN_DIR)/post_stats
+	@echo "[STATS] Ejecutando análisis estadístico multimodelo..."
+
+	@cd $(DATA_DIR) && ../$(BIN_DIR)/post_stats
+
+	@echo "[STATS] Generando visualización con Gnuplot..."
+
+	@gnuplot -e "FILE_IN='$(DATA_DIR)/estadistica_final.stats'; FILE_OUT='$(IMAG_DIR)/validacion_stats.png'" tools/plot_stats.gp
+
+	@echo "[SUCCESS] Estadística y visualización completadas."
+
 
 # ------------------------------------------------
 clean:

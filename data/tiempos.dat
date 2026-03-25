@@ -1,19 +1,19 @@
 
 ==== Ejecutando poisson_serial ====
-20	16	0.00120677	679	serial
+50	16	0.0285151	2040	serial
 ==== Ejecutando poisson_parallel_for-act1 ====
-20	16	0.0486974	819	parallel_for
+50	16	0.0568112	2033	parallel_for
 ==== Ejecutando poisson_collapse-act2 ====
-20	16	0.060459	797	collapse
+50	16	0.0519289	2033	collapse
 ==== Ejecutando poisson_sections-act3 ====
-20	16	0.00207922	795	sections
+50	16	0.0520026	2033	sections
 ==== Ejecutando poisson_schedule ====
-20	16	0.0704696	806	schedule
+50	16	0.0571354	2033	schedule
 ==== Ejecutando poisson_sync ====
-20	16	0.0726899	793	sync
+50	16	0.0579239	2033	sync
 ==== Ejecutando poisson_critical-act6 ====
-20	16	0.0578007	808	critical
+50	16	0.0706262	2033	critical
 ==== Ejecutando poisson_atomic-act6 ====
-20	16	0.0613471	793	atomic
+50	16	0.0860053	2033	atomic
 ==== Ejecutando poisson_task-act7 ====
-20	16	0.065263	679	task
+50	16	0.170964	2040	task
