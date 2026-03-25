@@ -98,17 +98,18 @@ void export_to_file(const std::vector<std::vector<double>>& T,
     }
     file.close();
 }
-
 int main(int argc, char* argv[]) {
-    // Parámetros por defecto
-    int M = 50, N = 50;
+    int M = 50, N = 50, num_threads = omp_get_max_threads();
     double TOL_val = 1e-6;
 
-    // Captura de argumentos del Makefile
     if (argc >= 4) {
         M = std::stoi(argv[1]);
         N = std::stoi(argv[2]);
         TOL_val = std::stod(argv[3]);
+    }
+    if (argc >= 5) {
+        num_threads = std::stoi(argv[4]);
+        omp_set_num_threads(num_threads);
     }
 
     double h, k;
@@ -124,10 +125,8 @@ int main(int argc, char* argv[]) {
     std::string filename = "data/solucion_poisson_schedule.dat";
     export_to_file(T, h, k, M, N, filename);
 
-    // Salida estandarizada impecable
-    std::cout << "Programa: poisson_schedule | Tiempo_total: "
-              << (end_time - start_time) << " s | Iteraciones: "
-              << iterations << " | Archivo: " << filename << std::endl;
+    std::cout << M << "\t" << num_threads << "\t" << (end_time - start_time) 
+              << "\t" << iterations << "\tschedule" << std::endl;
 
     return 0;
 }
