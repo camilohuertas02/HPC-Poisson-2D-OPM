@@ -19,7 +19,7 @@ TOL ?= 1e-6
 
 # --- PARÁMETROS DE EXPERIMENTACIÓN (Nuevos) ---
 THREADS_TEST = 1 2 4 8 16 32 64 80
-GRID_SIZES = 50 
+GRID_SIZES = 50 100 200
 
 # Nombres base de los ejecutables
 TARGETS = \

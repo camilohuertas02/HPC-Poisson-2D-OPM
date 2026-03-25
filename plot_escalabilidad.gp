@@ -32,28 +32,31 @@ do for [m in mallas] {
     # Truco de Gnuplot: Filtramos nativamente la columna 1 ($1) que tenga la malla actual (m)
     # y la columna 5 ($5) que tenga el nombre del programa.
     
-    plot \
+plot \
     sprintf("< awk '$1==%s && $5==\"serial\"' data/tiempos_experiment.dat", m) \
-         u 2:3 w linespoints lw 2 pt 13 lc "black" title "Serial (Baseline)", \
-         \
+        u 2:3 w linespoints lw 2 pt 13 lc "black" title "Serial (Baseline)", \
+    \
     sprintf("< awk '$1==%s && $5==\"parallel_for\"' data/tiempos_experiment.dat", m) \
-         u 2:3 w linespoints lw 2 pt 7 lc rgb "#0072bd" title "Parallel For", \
-         \
+        u 2:3 w linespoints lw 2 pt 7 lc rgb "#0072bd" title "Parallel For", \
+    \
     sprintf("< awk '$1==%s && $5==\"collapse\"' data/tiempos_experiment.dat", m) \
-         u 2:3 w linespoints lw 2 pt 5 lc rgb "#d95319" title "Collapse(2)", \
-         \
+        u 2:3 w linespoints lw 2 pt 5 lc rgb "#d95319" title "Collapse(2)", \
+    \
     sprintf("< awk '$1==%s && $5==\"schedule\"' data/tiempos_experiment.dat", m) \
-         u 2:3 w linespoints lw 2 pt 9 lc rgb "#edb120" title "Schedule", \
-         \
+        u 2:3 w linespoints lw 2 pt 9 lc rgb "#edb120" title "Schedule", \
+    \
+    sprintf("< awk '$1==%s && $5==\"sections\"' data/tiempos_experiment.dat", m) \
+        u 2:3 w linespoints lw 2 pt 8 lc rgb "#d95319" title "Sections", \
+    \
     sprintf("< awk '$1==%s && $5==\"sync\"' data/tiempos_experiment.dat", m) \
-         u 2:3 w linespoints lw 2 pt 11 lc rgb "#7e2f8e" title "Sync", \
-         \
+        u 2:3 w linespoints lw 2 pt 11 lc rgb "#7e2f8e" title "Sync", \
+    \
     sprintf("< awk '$1==%s && $5==\"critical\"' data/tiempos_experiment.dat", m) \
-         u 2:3 w linespoints lw 2 pt 15 lc rgb "#77ac30" title "Critical", \
-         \
+        u 2:3 w linespoints lw 2 pt 15 lc rgb "#77ac30" title "Critical", \
+    \
     sprintf("< awk '$1==%s && $5==\"atomic\"' data/tiempos_experiment.dat", m) \
-         u 2:3 w linespoints lw 2 pt 17 lc rgb "#4dbeee" title "Atomic", \
-         \
+        u 2:3 w linespoints lw 2 pt 17 lc rgb "#4dbeee" title "Atomic", \
+    \
     sprintf("< awk '$1==%s && $5==\"task\"' data/tiempos_experiment.dat", m) \
-         u 2:3 w linespoints lw 2 pt 19 lc rgb "#a2142f" title "Tasks"
+        u 2:3 w linespoints lw 2 pt 19 lc rgb "#a2142f" title "Tasks"
 }
