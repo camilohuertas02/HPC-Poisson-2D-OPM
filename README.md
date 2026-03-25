@@ -5,7 +5,7 @@ Este repositorio contiene la implementación y el análisis de rendimiento de la
 ## Autores
 * Camilo Huertas
 * Sebastián Rodríguez
-* Universidad Distrital Francisco José de Caldas - Proyecto Curricular de Física
+* Universidad Distrital Francisco José de Caldas - Programa académico de Física
 
 ## Requisitos del Sistema
 Para compilar, ejecutar y visualizar los resultados de este proyecto, necesitas tener instalados:
