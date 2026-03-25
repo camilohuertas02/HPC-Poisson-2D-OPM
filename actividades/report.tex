@@ -71,6 +71,13 @@ Se paralelizó el bucle principal.
     \item \textbf{Análisis:} A pesar de aplanar los bucles $i$ y $j$, introdujo un sobrecosto algebraico en la gestión de índices que lo hizo levemente más lento que el \texttt{parallel for} simple en todos los escenarios.
 \end{itemize}
 
+\subsection*{Actividad 3: \texttt{sections}}
+\begin{itemize}
+    \item \textbf{Mejor tiempo (32 hilos):} 0.477 segundos.
+    \item \textbf{Análisis de Funciones:} Se paralelizaron \texttt{initialize\_boundaries} y \texttt{poisson\_source}. Fue necesario extraer el cálculo de los pasos de malla $h, k$ y el \texttt{resize} de los vectores fuera de la región paralela para evitar condiciones de carrera (\textit{race conditions}) y asegurar que cada sección operara sobre memoria ya asignada e independiente.
+    \item \textbf{Reflexión sobre Eficiencia:} Para una malla de $200 \times 200$, la paralelización de estas funciones no resulta eficiente con 32 hilos. El tiempo de $0.477$ s (frente a los $0.057$ s obtenidos con 16 hilos) demuestra que el \textit{overhead} de creación del equipo de hilos y la contención del bus de memoria superan ampliamente el tiempo de ejecución serial de las tareas. Esta estrategia solo es valiosa en problemas de escala masiva donde la latencia de inicialización es un cuello de botella crítico.
+\end{itemize}
+
 \subsection*{Actividades 4 y 5: \texttt{schedule} y Control de Sincronización (\texttt{critical})}
 \begin{itemize}
     \item \textbf{Mejor tiempo \texttt{schedule} (32 hilos):} 0.391 segundos.
