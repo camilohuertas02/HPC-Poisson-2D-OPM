@@ -2,18 +2,28 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <fstream>
 #include <omp.h>
 #include <string>
+#include <iomanip>     // Obligatorio para precisión numérica formal
+#include <filesystem>  // Obligatorio para gestión robusta de sistema de archivos
+
+namespace fs = std::filesystem;
 
 const double x_start = 1.0, x_end = 2.0;
 const double y_start = 0.0, y_end = 2.0;
+
+// Contador de iteraciones global
 int iterations = 0;
 
 void initialize_grid(int M, int N, std::vector<std::vector<double>>& T, std::vector<std::vector<double>>& source, double& h, double& k) {
     h = (x_end - x_start) / M;
     k = (y_end - y_start) / N;
+    
     T.assign(M + 1, std::vector<double>(N + 1, 0.0));
     source.assign(M + 1, std::vector<double>(N + 1, 0.0));
+    
+    // Condiciones de frontera analíticas impuestas rigurosamente
     for (int i = 0; i <= M; ++i){
         T[i][0] = std::pow(x_start + i*h, 2);
         T[i][N] = std::pow((x_start + i*h) - 2.0, 2);
@@ -27,32 +37,73 @@ void initialize_grid(int M, int N, std::vector<std::vector<double>>& T, std::vec
 void poisson_source(int M, int N, std::vector<std::vector<double>>& source) {
     for (int i = 0; i <= M; ++i){
         for (int j = 0; j <= N; ++j){
-            source[i][j] = 4.0;
+            source[i][j] = 4.0; // Término fuente constante f(x,y) = 4.0
         }
     }       
 }
 
 void solve_poisson(std::vector<std::vector<double>>& T, const std::vector<std::vector<double>>& source, int M, int N, double h, double k, double TOL_param) {
     double delta = 1.0;
+    
     while (delta > TOL_param) {
         delta = 0.0;
+        
+        // Sincronización optimizada mediante reducción atómica de OpenMP
         #pragma omp parallel for reduction(max:delta)
         for (int i = 1; i < M; ++i){
             for (int j = 1; j < N; ++j){
                 double T_old = T[i][j];
+                
+                // Discretización por diferencias finitas (esquema centrado de 5 puntos)
                 T[i][j] = (((T[i+1][j] + T[i-1][j]) * k*k) + ((T[i][j+1] + T[i][j-1]) * h*h) - (source[i][j] * h*h*k*k)) / (2.0 * (h*h + k*k));
+                
+                // Cálculo del residuo local
                 double diff = std::abs(T[i][j] - T_old);
-                if (diff > delta) delta = diff;
+                if (diff > delta) {
+                    delta = diff;
+                }
             }
         }
         iterations++;
     }
 }
 
+void export_to_file(const std::vector<std::vector<double>>& T, double h, double k, int M, int N, const std::string& filename) {
+    // 1. Verificación del árbol de directorios
+    fs::path p(filename);
+    if (p.has_parent_path()) {
+        fs::create_directories(p.parent_path());
+    }
+
+    // 2. Apertura de flujo de datos
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Error crítico: No se pudo abrir o crear el archivo en " << filename << std::endl;
+        return;
+    }
+
+    // 3. Estándar de formato científico para exportación
+    file << "# X\tY\tT(x,y)\n";
+    file << std::scientific << std::setprecision(8);
+
+    // 4. Volcado topológico estructurado
+    for (int i = 0; i <= M; ++i) {
+        double x = x_start + i * h;
+        for (int j = 0; j <= N; ++j) {
+            double y = y_start + j * k;
+            file << x << "\t" << y << "\t" << T[i][j] << "\n";
+        }
+        // Delimitador de bloque topológico 2D
+        file << "\n";
+    }
+    file.close();
+}
+
 int main(int argc, char* argv[]) {
     int M = 50, N = 50, num_threads = omp_get_max_threads();
     double TOL_val = 1e-6;
 
+    // Procesamiento paramétrico desde línea de comandos
     if (argc >= 4) {
         M = std::stoi(argv[1]);
         N = std::stoi(argv[2]);
@@ -60,21 +111,28 @@ int main(int argc, char* argv[]) {
     }
     if (argc >= 5) {
         num_threads = std::stoi(argv[4]);
-        omp_set_num_threads(num_threads); // AQUÍ CONTROLAMOS LOS HILOS
+        omp_set_num_threads(num_threads); // Imposición explícita de hilos
     }
 
     double h, k;
     std::vector<std::vector<double>> T, source;
+    
+    // Inicialización de la física del problema
     initialize_grid(M, N, T, source, h, k);
     poisson_source(M, N, source);
 
+    // Medición de rendimiento en tiempo de reloj de pared
     double start_time = omp_get_wtime();
     solve_poisson(T, source, M, N, h, k, TOL_val);
     double end_time = omp_get_wtime();
 
+    // Exportación de resultados
+    std::string filename = "data/solucion_poisson_parallel_for.dat";
+    export_to_file(T, h, k, M, N, filename);
+
+    // Salida estándar formateada para pipelines de análisis de datos
     std::cout << M << "\t" << num_threads << "\t" << (end_time - start_time) 
               << "\t" << iterations << "\tparallel_for" << std::endl;
-
 
     return 0;
 }
