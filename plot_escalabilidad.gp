@@ -8,8 +8,8 @@ set terminal pngcairo size 800,600 enhanced font 'Verdana,12'
 
 # Estilo general
 set grid
-set xlabel "Número de Hilos" font ",12" bold
-set ylabel "Tiempo de Ejecución (segundos)" font ",12" bold
+set xlabel "Número de Hilos" font ",12"
+set ylabel "Tiempo de Ejecución (segundos)" font ",12"
 set logscale x 2
 set xtics (1, 2, 4, 8, 16, 32, 64, 80)
 set logscale y 10
@@ -27,7 +27,7 @@ do for [m in mallas] {
     # Nombre del archivo de salida para esta malla
     set output sprintf("imag/comparativa_malla_%s.png", m)
     
-    set title sprintf("Rendimiento OpenMP - Malla %sx%s", m, m) font ",14" bold
+    set title sprintf("Rendimiento OpenMP - Malla %sx%s", m, m) font ",14"
     
     # Truco de Gnuplot: Filtramos nativamente la columna 1 ($1) que tenga la malla actual (m)
     # y la columna 5 ($5) que tenga el nombre del programa.
@@ -56,7 +56,4 @@ do for [m in mallas] {
          \
     sprintf("< awk '$1==%s && $5==\"task\"' data/tiempos_experiment.dat", m) \
          u 2:3 w linespoints lw 2 pt 19 lc rgb "#a2142f" title "Tasks"
-         
-    # Nota: He excluido "sections" porque son funciones tan rápidas que la gráfica se distorsiona,
-    # pero si quieres puedes agregar una línea extra igual a las de arriba.
 }
