@@ -1,0 +1,131 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{tabularx}
+\usepackage{hyperref}
+
+\title{\textbf{Proyecto de Paralelización con Open-MP: \\ Ecuación de Poisson en 2D}}
+\author{
+    \begin{tabular}{c}
+    Camilo Huertas \quad Sebastián Rodriguez \\
+    \textit{Proyecto Curricular de Física} \\
+    \textit{Universidad Distrital Francisco José de Caldas} \\
+    \textit{Bogotá, Colombia}
+    \end{tabular}
+}
+\date{24 de marzo de 2026}
+
+\begin{document}
+
+\maketitle
+
+\section*{Objetivo}
+Aplicar diferentes directivas de OpenMP para paralelizar un código secuencial que resuelve la ecuación de Poisson 2D mediante diferencias finitas, y analizar el impacto de cada estrategia en el rendimiento y estructura del programa.
+
+\section*{Especificaciones del Sistema de Pruebas}
+Todas las pruebas de rendimiento registradas en este informe fueron ejecutadas en un equipo con la siguiente configuración de hardware:
+\begin{itemize}
+    \item \textbf{Procesador:} AMD Ryzen 7 7730U with Radeon Graphics.
+    \item \textbf{Arquitectura:} x86\_64.
+    \item \textbf{Núcleos físicos:} 8.
+    \item \textbf{Hilos lógicos (\textit{Threads}):} 16.
+\end{itemize}
+\textit{Nota metodológica:} Al no especificar un límite en el código fuente ni mediante la variable de entorno \texttt{OMP\_NUM\_THREADS}, OpenMP asignó por defecto el uso del total de \textbf{16 hilos lógicos} para todas las directivas de paralelización.
+
+\section*{Preparación: Ejecución Secuencial}
+Al ejecutar el código base secuencial, se obtuvieron los siguientes resultados:
+\begin{itemize}
+    \item \textbf{Tiempo de ejecución:} 12.3298 segundos.
+    \item \textbf{Número de iteraciones:} 49367.
+    \item \textbf{Número de threads:} 1.
+\end{itemize}
+
+\section*{Actividad 1: \texttt{\#pragma omp parallel for}}
+Se paralelizó el bucle principal en \texttt{solve\_poisson} aplicando \texttt{\#pragma omp parallel for} y utilizando \texttt{reduction(max:delta)} para evitar condiciones de carrera.
+\begin{itemize}
+    \item \textbf{Tiempo de ejecución:} 1.14783 segundos.
+    \item \textbf{¿Hubo diferencia en el número de iteraciones?} Sí, bajó a 49360 iteraciones.
+    \item \textbf{¿Por qué es necesaria la cláusula \texttt{reduction}?} Es fundamental porque múltiples hilos están calculando el error local y necesitan actualizar la variable compartida \texttt{delta}. Sin \texttt{reduction}, habría condiciones de carrera y pérdida de datos al sobreescribir el valor.
+    \item \textbf{¿Hubo mejora de rendimiento?} Sí, la mejora fue drástica. Al utilizar los 16 hilos del procesador, se logró acelerar el proceso en un factor cercano a 10.7x respecto a la versión secuencial.
+\end{itemize}
+
+\section*{Actividad 2: \texttt{collapse(2)}}
+Se sustituyó el bucle paralelo por \texttt{\#pragma omp parallel for collapse(2) reduction(max:delta)}.
+\begin{itemize}
+    \item \textbf{Tiempo de ejecución:} 1.82978 segundos.
+    \item \textbf{¿Mejoró respecto a la versión anterior?} No, el tiempo aumentó en comparación a la Actividad 1.
+    \item \textbf{¿Qué hace \texttt{collapse(2)}?} Fusiona los dos bucles anidados en un único espacio de iteración más grande antes de distribuirlo entre los hilos.
+    \item \textbf{¿Es siempre recomendable su uso?} No. Como se observa en los resultados, si el bucle externo ya proporciona suficiente trabajo para mantener ocupados a los hilos, el \texttt{collapse} añade un sobrecosto (overhead) de gestión de índices que termina ralentizando la ejecución.
+\end{itemize}
+
+\section*{Actividad 3: \texttt{sections}}
+Se paralelizaron \texttt{initialize\_grid} y \texttt{poisson\_source}.
+\begin{itemize}
+    \item \textbf{Tiempo de ejecución:} 1.27695 segundos.
+    \item \textbf{¿Vale la pena paralelizar funciones tan rápidas?} Generalmente no. El costo de crear la región paralela, sincronizar los hilos e iniciar las secciones supera los beneficios de ejecución paralela para funciones que computacionalmente son tan ligeras.
+\end{itemize}
+
+\section*{Actividad 4: \texttt{parallel} y \texttt{for} separados}
+Se separó la región paralela del bucle for y se evaluaron distintas estrategias de \texttt{schedule}.
+\begin{itemize}
+    \item \textbf{Tiempo de ejecución:} 1.16695 segundos. 
+\end{itemize}
+
+\section*{Actividad 5: \texttt{nowait}, \texttt{barrier}, \texttt{single}, \texttt{critical}}
+\begin{itemize}
+    \item \textbf{Tiempo con control de sincronización:} 1.19588 segundos.
+    \item \textbf{¿\texttt{critical} ralentizó la ejecución?} Sí. Forzar secciones críticas obliga a que los hilos se escolten y pasen uno a la vez, eliminando el beneficio de concurrencia y agregando bloqueos.
+\end{itemize}
+
+\section*{Actividad 6: Conteo de iteraciones}
+Se evaluó el rendimiento utilizando \texttt{critical} y \texttt{atomic} para proteger el incremento de una variable compartida.
+\begin{itemize}
+    \item \textbf{critical:} 1.18077 segundos.
+    \item \textbf{atomic:} 1.41786 segundos.
+    \item \textbf{Diferencias y Casos de Uso:} Curiosamente, \texttt{critical} fue ligeramente más rápido en este entorno. En general, \texttt{atomic} aprovecha instrucciones de hardware y es preferible para operaciones matemáticas simples (como un incremento ++), mientras que \texttt{critical} es necesario cuando el bloque a proteger contiene múltiples líneas de código o estructuras complejas.
+\end{itemize}
+
+\section*{Actividad 7: Exploración con tareas (\texttt{task})}
+\begin{itemize}
+    \item \textbf{Tiempo de ejecución:} 23.2788 segundos.
+    \item \textbf{Iteraciones:} 49367.
+    \item \textbf{Conclusión:} El rendimiento usando \texttt{task} se degradó severamente (casi el doble de lento que la versión secuencial). 
+    \item \textbf{Ventajas y Desventajas:} La principal ventaja de \texttt{task} es su flexibilidad para estructuras irregulares (como recorrer árboles o listas enlazadas). La gran desventaja, evidente en este caso, es el enorme sobrecosto de crear y empaquetar una tarea por cada bloque. Para arreglos regulares y matrices bidimensionales densas, \texttt{parallel for} es inmensamente superior.
+\end{itemize}
+
+\section*{Actividad Final: Comparación de Estrategias}
+
+\begin{table}[h!]
+\centering
+\begin{tabularx}{\textwidth}{llccX}
+\toprule
+\textbf{Versión} & \textbf{Directiva usada} & \textbf{Tiempo (s)} & \textbf{Iteraciones} & \textbf{Observaciones} \\
+\midrule
+Secuencial & N/A & 12.33 & 49367 & Ejecución base lenta. 1 hilo. \\
+Paralelo básico & \texttt{parallel for} & 1.15 & 49360 & Mejor rendimiento global (16 hilos). \\
+Colapsado & \texttt{collapse(2)} & 1.83 & 49360 & Overhead perjudica el tiempo. \\
+Sections & \texttt{sections} & 1.28 & 49360 & Funciones muy pequeñas. \\
+Schedule & \texttt{schedule} & 1.17 & 49360 & Muy similar al paralelo básico. \\
+Sincronización & \texttt{nowait}/\texttt{critical} & 1.20 & 49360 & Leve penalización de tiempo. \\
+Conteo (critical) & \texttt{critical} & 1.18 & 49360 & Ligeramente más rápido que atomic. \\
+Conteo (atomic) & \texttt{atomic} & 1.42 & 49360 & Mayor overhead en este contexto. \\
+Tareas & \texttt{task} & 23.28 & 49367 & Degradación severa del rendimiento. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section*{Conclusiones Generales}
+\begin{enumerate}
+    \item \textbf{¿Cuál fue la versión más rápida?} \\
+    La Actividad 1, usando un \texttt{\#pragma omp parallel for} básico con reducción, con 1.14783 segundos.
+    \item \textbf{¿Qué directiva es más fácil de usar?} \\
+    \texttt{\#pragma omp parallel for}. Basta con colocarla sobre el bucle principal y manejar correctamente el \texttt{reduction} para tener un código robusto.
+    \item \textbf{¿Hubo directivas que empeoraron el rendimiento? ¿Por qué?} \\
+    Sí, la directiva \texttt{task} (23.28s) empeoró masivamente el tiempo, y \texttt{collapse(2)} (1.83s) fue peor que el bucle normal. Esto ocurre porque el sobrecosto administrativo de los hilos de OpenMP al organizar tareas y aplanar bucles superó la ventaja computacional.
+\end{enumerate}
+
+\end{document}
