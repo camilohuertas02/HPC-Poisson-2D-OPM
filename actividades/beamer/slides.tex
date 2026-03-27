@@ -65,7 +65,7 @@
   keywordstyle=[2]\color{UDsecond}\bfseries,
   numberstyle=\tiny\color{codegray},
   stringstyle=\color{codepurple},
-  basicstyle=\ttfamily\tiny, % <-- Reducido a \tiny para ahorrar espacio
+  basicstyle=\ttfamily\tiny,
   breakatwhitespace=false,
   breaklines=true,
   captionpos=b,
@@ -186,7 +186,6 @@
 \section{Objetivo y Sistema HPC}
 % ============================================================
 
-% <-- Se añadió shrink=5 para autoajustar si el texto excede
 \begin{frame}[shrink=5]{Objetivo del Proyecto}
   \begin{block}{Objetivo}
     Aplicar directivas de \textbf{OpenMP} para paralelizar la \textbf{Ecuación de Poisson 2D} (diferencias finitas). Se evaluará la \emph{escalabilidad}, cuellos de botella de memoria y límites de aceleración (Ley de Amdahl) mediante un barrido paramétrico masivo.
@@ -245,12 +244,12 @@
     \column{0.44\textwidth}
       \begin{block}{Metodología de Pruebas}
         \begin{itemize}
-          \item Mallas: $50^2$, $100^2$, $200^2$ (hasta $512^2$)
-          \item Hilos:\\ $p \in \{1,2,4,8,16,32,64,80\}$
+          \item Mallas: $64^2$, $128^2$, $256^2$, $512^2$, $\mathbf{1024^2}$
+          \item Hilos:\\ $p \in \{1,4,8,16,32,64\}$
         \end{itemize}
       \end{block}
       \begin{alertblock}{Sweet Spot Identificado}
-        El máximo rendimiento se alcanza con \textbf{32 hilos}. Por encima de 64, el \emph{overhead} destruye el \emph{speedup}.
+        Para mallas $\leq 256$: óptimo en \textbf{32 hilos}. Para mallas $\geq 512$: el máximo rendimiento se alcanza con \textbf{64 hilos} ($43.9\times$ en $1024^2$).
       \end{alertblock}
   \end{columns}
 \end{frame}
@@ -295,15 +294,16 @@ while (delta > TOL) {
           \toprule
           \textbf{Malla} & \textbf{Tiempo (s)} & \textbf{Iter.} \\
           \midrule
-          $64^2$   & 0.088   & 3\,136  \\
-          $128^2$  & 1.220   & 10\,244 \\
-          $256^2$  & 15.404  & 31\,844 \\
-          $512^2$  & 177.864 & 91\,868 \\
+          $64^2$    & 0.088    & 3\,136   \\
+          $128^2$   & 1.194    & 10\,244  \\
+          $256^2$   & 15.132   & 31\,844  \\
+          $512^2$   & 176.55   & 91\,868  \\
+          $1024^2$  & 1822.81  & 236\,161 \\
           \bottomrule
         \end{tabular}
       \end{block}
       \begin{exampleblock}{Observación}
-        Las iteraciones crecen como $\mathcal{O}(N^2)$. Convergencia lenta típica de Gauss-Seidel.
+        Las iteraciones crecen como $\mathcal{O}(N^2)$. Convergencia lenta típica de Gauss-Seidel. La malla $1024^2$ requiere $\approx30$ min secuencial.
       \end{exampleblock}
   \end{columns}
 \end{frame}
@@ -312,34 +312,73 @@ while (delta > TOL) {
 \section{Análisis de Escalabilidad}
 % ============================================================
 
-\begin{frame}{Curvas de Rendimiento — Barrido Paramétrico}
-  \begin{columns}[c]
-    \column{0.64\textwidth}
-      \begin{figure}
-        \includegraphics[width=0.49\linewidth]{../../imag/comparativa_malla_50.png}%
-        \includegraphics[width=0.49\linewidth]{../../imag/comparativa_malla_100.png}\\[2pt]
-        \includegraphics[width=0.70\linewidth]{../../imag/comparativa_malla_200.png}
-      \end{figure}
-    \column{0.34\textwidth}
-      \begin{block}{Hallazgos Clave}
-        \begin{itemize}
-          \item El \emph{sweet spot} universal es \textbf{32 hilos}.
-          \item Por encima de \textbf{64 hilos}: inflexión al alza.
-          \item Causa: saturación del ancho de banda de la memoria compartida (\emph{Von Neumann Bottleneck}).
-        \end{itemize}
-      \end{block}
-      \begin{alertblock}{Ley de Amdahl}
-        $S(p)=\dfrac{1}{(1-\alpha)+\alpha/p}$\\[4pt]
-        La fracción serial $\alpha$ limita la aceleración máxima teórica.
-      \end{alertblock}
-  \end{columns}
+% --- DIAPOSITIVA 1: ESCALAMIENTO MALLAS PEQUEÑAS ---
+\begin{frame}{Curvas de Rendimiento — Mallas de Baja Escala}
+  \begin{figure}
+    \centering
+    \begin{minipage}{0.48\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{../../imag/comparativa_malla_64.png}
+      \caption{Malla $64^2$: Saturación temprana a 32 hilos.}
+    \end{minipage}\hfill
+    \begin{minipage}{0.48\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{../../imag/comparativa_malla_128.png}
+      \caption{Malla $128^2$: Transición del régimen de escalabilidad.}
+    \end{minipage}
+  \end{figure}
 \end{frame}
 
+% --- DIAPOSITIVA 2: ESCALAMIENTO MALLAS MEDIAS ---
+\begin{frame}{Curvas de Rendimiento — Mallas de Media Escala}
+  \begin{figure}
+    \centering
+    \begin{minipage}{0.48\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{../../imag/comparativa_malla_256.png}
+      \caption{Malla $256^2$: Mejora en la fracción paralela $\alpha$.}
+    \end{minipage}\hfill
+    \begin{minipage}{0.48\textwidth}
+      \centering
+      \includegraphics[width=\linewidth]{../../imag/comparativa_malla_512.png}
+      \caption{Malla $512^2$: Desplazamiento del óptimo a 64 hilos.}
+    \end{minipage}
+  \end{figure}
+\end{frame}
+
+% --- DIAPOSITIVA 3: ANÁLISIS DE MALLA CRÍTICA Y TEORÍA ---
+\begin{frame}{Análisis de Rendimiento Crítico ($1024^2$)}
+  \begin{columns}[T]
+    \begin{column}{0.55\textwidth}
+      \begin{figure}
+        \centering
+        \includegraphics[width=\linewidth]{../../imag/comparativa_malla_1024.png}
+        \caption{Resolución $1024^2$: Máximo \emph{speedup} observado.}
+      \end{figure}
+    \end{column}
+
+    \begin{column}{0.42\textwidth}
+      \begin{block}{Hallazgos Clave}
+        \begin{itemize}
+          \item Mallas $\leq 256$: óptimo en \textbf{32 hilos}.
+          \item Mallas $\geq 512$: óptimo en \textbf{64 hilos}.
+          \item \texttt{parallel for} logra $\mathbf{43.9\times}$ ($E \approx 68\%$).
+          \item \texttt{task} colapsa por excesivo \emph{overhead}.
+        \end{itemize}
+      \end{block}
+
+      \begin{alertblock}{Ley de Amdahl}
+        $$S(p) = \frac{1}{(1-\alpha) + \frac{\alpha}{p}}$$
+        \small 
+        A medida que $N$ crece, el costo computacional domina sobre la latencia de sincronización, incrementando $\alpha$.
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
 % ============================================================
 \section{Actividad 1 — \texttt{parallel for}}
 % ============================================================
 
-% <-- shrink=10 para encajar todo en la pag 7
 \begin{frame}[fragile,shrink=10]{Act.\ 1 — \texttt{\#pragma omp parallel for}}
   \begin{columns}[t]
     \column{0.54\textwidth}
@@ -363,24 +402,27 @@ iterations++;
         \end{itemize}
       \end{exampleblock}
     \column{0.44\textwidth}
-      \begin{block}{Speedup en Malla $512^2$}
+      \begin{block}{Speedup — \texttt{parallel for}}
         \scriptsize
-        \renewcommand{\arraystretch}{0.9}
-        \begin{tabular}{@{}ccc@{}}
+        \renewcommand{\arraystretch}{0.85}
+        \begin{tabular}{@{}cccc@{}}
           \toprule
-          \textbf{Hilos} & \textbf{Tiempo (s)} & \textbf{Speedup} \\
+          \textbf{Malla} & \textbf{Hilos} & \textbf{T (s)} & \textbf{Speedup} \\
           \midrule
-          1  & 177.86 & 1.00× \\
-          4  & 44.77  & 3.97× \\
-          16 & 11.81  & 15.06× \\
-          32 & 6.63   & 26.82× \\
-          \textbf{64} & \textbf{5.50} & \textbf{32.36×} \\
+          $512^2$  & 1  & 176.55 & 1.00× \\
+          $512^2$  & 16 & 11.82  & 14.93× \\
+          $512^2$  & 32 & 6.69   & 26.38× \\
+          $512^2$  & \textbf{64} & \textbf{5.48} & \textbf{32.22×} \\
+          \midrule
+          $1024^2$ & 1  & 1822.81 & 1.00× \\
+          $1024^2$ & 16 & 117.20  & 15.55× \\
+          $1024^2$ & 32 & 62.51   & 29.16× \\
+          $1024^2$ & \textbf{64} & \textbf{41.49} & \textbf{43.93×} \\
           \bottomrule
         \end{tabular}
       \end{block}
       \begin{alertblock}{Veredicto Arquitectónico}
-        \textbf{Mejor costo-beneficio:} $32\times$ de \emph{speedup} con una sola línea de código.\\[4pt]
-        Para 100\% de determinismo numérico, combinar con métodos de \emph{Jacobi} o \emph{Red-Black}.
+        El \emph{speedup} \textbf{sigue creciendo} con la malla: $32.2\times$ en $512^2$ vs $\mathbf{43.9\times}$ en $1024^2$. A mayor problema, mayor fracción paralela efectiva.
       \end{alertblock}
   \end{columns}
 \end{frame}
@@ -404,20 +446,23 @@ for (int i = 1; i < M; ++i) {
         Fusiona bucles en un espacio lineal único de $(M{-}1)\times(N{-}1)$ iteraciones, aumentando la granularidad para el \emph{scheduler}.
       \end{block}
     \column{0.48\textwidth}
-      \begin{block}{Comparativa vs \texttt{parallel for} ($512^2$, 64 hilos)}
+      \begin{block}{Comparativa vs \texttt{parallel for} (64 hilos)}
         \scriptsize
-        \renewcommand{\arraystretch}{0.9}
-        \begin{tabular}{@{}lcc@{}}
+        \renewcommand{\arraystretch}{0.85}
+        \begin{tabular}{@{}lccc@{}}
           \toprule
-          \textbf{Variante} & \textbf{Tiempo (s)} & \textbf{Speedup} \\
+          \textbf{Malla} & \textbf{Variante} & \textbf{T (s)} & \textbf{Speedup} \\
           \midrule
-          \texttt{parallel for} & \textbf{5.50} & \textbf{32.36×} \\
-          \texttt{collapse(2)}  & 5.83 & 30.52× \\
+          $512^2$  & \texttt{par. for}     & \textbf{5.48} & \textbf{32.22×} \\
+          $512^2$  & \texttt{collapse(2)}  & 5.78 & 30.54× \\
+          \midrule
+          $1024^2$ & \texttt{par. for}     & \textbf{41.49} & \textbf{43.93×} \\
+          $1024^2$ & \texttt{collapse(2)}  & 44.62 & 40.85× \\
           \bottomrule
         \end{tabular}
       \end{block}
       \begin{alertblock}{¿Mejoró? \textbf{No.}}
-        Introduce \emph{overhead} por el recálculo de índices. En mallas cuadradas donde $M \gg p$, el bucle externo ya es suficiente.
+        Introduce \emph{overhead} por el recálculo de índices. Consistentemente más lento en todas las mallas donde $M \gg p$.
       \end{alertblock}
       \begin{exampleblock}{¿Cuándo sí usarlo?}
         Solo cuando el bucle externo tiene muy pocas iteraciones ($M \approx p$).
@@ -447,16 +492,15 @@ std::vector<std::vector<double>> source(M+1, std::vector<double>(N+1, 0.0));
 }
 \end{lstlisting}
     \column{0.48\textwidth}
-      \begin{block}{Speedup Malla $512^2$ (Total)}
+      \begin{block}{Speedup — \texttt{sections} (64 hilos)}
         \scriptsize
-        \renewcommand{\arraystretch}{0.9}
+        \renewcommand{\arraystretch}{0.85}
         \begin{tabular}{@{}ccc@{}}
           \toprule
-          \textbf{Hilos} & \textbf{Tiempo (s)} & \textbf{Speedup} \\
+          \textbf{Malla} & \textbf{T (s)} & \textbf{Speedup} \\
           \midrule
-          1  & 177.86 & 1.00× \\
-          16 & 14.06  & 12.65× \\
-          64 & 6.03   & 29.50× \\
+          $512^2$  & 6.006  & 29.40× \\
+          $1024^2$ & 47.962 & 38.00× \\
           \bottomrule
         \end{tabular}
       \end{block}
@@ -498,17 +542,15 @@ std::vector<std::vector<double>> source(M+1, std::vector<double>(N+1, 0.0));
         \end{itemize}
       \end{exampleblock}
     \column{0.48\textwidth}
-      \begin{block}{Speedup Malla $512^2$ — \texttt{schedule(static)}}
+      \begin{block}{Speedup — \texttt{schedule(static)} (64 hilos)}
         \scriptsize
-        \renewcommand{\arraystretch}{0.9}
+        \renewcommand{\arraystretch}{0.85}
         \begin{tabular}{@{}ccc@{}}
           \toprule
-          \textbf{Hilos} & \textbf{Tiempo (s)} & \textbf{Speedup} \\
+          \textbf{Malla} & \textbf{T (s)} & \textbf{Speedup} \\
           \midrule
-          1  & 177.86 & 1.00×  \\
-          16 & 11.78  & 15.10× \\
-          32 & 6.72   & 26.46× \\
-          \textbf{64} & \textbf{5.55} & \textbf{32.06×} \\
+          $512^2$  & 5.517  & 32.00× \\
+          $1024^2$ & 40.684 & 44.80× \\
           \bottomrule
         \end{tabular}
       \end{block}
@@ -516,7 +558,7 @@ std::vector<std::vector<double>> source(M+1, std::vector<double>(N+1, 0.0));
         Cada celda ejecuta la misma carga. Forzar asignación dinámica inunda el bus con \emph{overhead} de control.
       \end{alertblock}
       \begin{exampleblock}{Ventaja \texttt{parallel} + \texttt{for}}
-        No recrear el equipo de hilos en cada iteración del \texttt{while} reduce latencia acumulada.
+        No recrear el equipo de hilos en cada iteración del \texttt{while} reduce latencia acumulada. En $1024^2$ logra el \textbf{mejor speedup} de todas las directivas: $\mathbf{44.8\times}$.
       \end{exampleblock}
   \end{columns}
 \end{frame}
@@ -547,21 +589,20 @@ for (int i = 1; i < M; ++i)
 { iterations++; }
 \end{lstlisting}
     \column{0.48\textwidth}
-      \begin{block}{Resultados — Malla $512^2$}
+      \begin{block}{Speedup — Sincronización manual (64 hilos)}
         \scriptsize
-        \renewcommand{\arraystretch}{0.9}
+        \renewcommand{\arraystretch}{0.85}
         \begin{tabular}{@{}ccc@{}}
           \toprule
-          \textbf{Hilos} & \textbf{Tiempo (s)} & \textbf{Speedup} \\
+          \textbf{Malla} & \textbf{T (s)} & \textbf{Speedup} \\
           \midrule
-          1  & 177.86 & 1.00×  \\
-          16 & 12.24  & 14.52× \\
-          64 & 7.13   & 24.94× \\
+          $512^2$  & 7.130  & 24.76× \\
+          $1024^2$ & 42.519 & 42.87× \\
           \bottomrule
         \end{tabular}
       \end{block}
       \begin{alertblock}{\texttt{nowait}: ¿hubo cambio?}
-        El beneficio fue anulado por el embotellamiento del \texttt{critical} y la \texttt{barrier} posterior. Peor que \texttt{reduction}.
+        El beneficio fue anulado por el embotellamiento del \texttt{critical} y la \texttt{barrier} posterior. Peor que \texttt{reduction} en todas las mallas.
       \end{alertblock}
       \begin{block}{Roles Clave}
         \begin{itemize}
@@ -597,25 +638,26 @@ iterations++;
         \end{itemize}
       \end{block}
     \column{0.50\textwidth}
-      \begin{block}{Alta Concurrencia (64 hilos)}
+      \begin{block}{Comparativa (64 hilos)}
         \scriptsize
-        \renewcommand{\arraystretch}{0.9}
-        \begin{tabular}{@{}cccc@{}}
+        \renewcommand{\arraystretch}{0.85}
+        \begin{tabular}{@{}lccc@{}}
           \toprule
-          \textbf{Malla} & \textbf{\texttt{critical} (s)} & \textbf{\texttt{atomic} (s)} & \textbf{Mejora} \\
+          \textbf{Malla} & \textbf{crit. (s)} & \textbf{atom. (s)} & \textbf{Mejora} \\
           \midrule
-          $64^2$   & 0.169 & \textbf{0.092} & +45\% \\
-          $128^2$  & 0.479 & \textbf{0.278} & +41\% \\
-          $256^2$  & 1.946 & \textbf{1.208} & +38\% \\
-          $512^2$  & 7.847 & \textbf{6.605} & +15\% \\
+          $64^2$    & 0.158 & \textbf{0.092} & +41.5\% \\
+          $128^2$   & 0.515 & \textbf{0.274} & +46.9\% \\
+          $256^2$   & 1.895 & \textbf{1.129} & +40.4\% \\
+          $512^2$   & 8.579 & \textbf{6.608} & +23.0\% \\
+          $1024^2$  & 51.138 & \textbf{49.287} & +3.6\% \\
           \bottomrule
         \end{tabular}
       \end{block}
-      \begin{exampleblock}{Regla General}
-        \textbf{\texttt{atomic}} siempre para contadores/sumas simples. \textbf{\texttt{critical}} solo para bloques multilínea o memoria dispersa.
+      \begin{exampleblock}{Tendencia con la escala}
+        La ventaja de \texttt{atomic} se reduce a mayor malla: en $1024^2$ el cómputo domina sobre la sincronización. Aun así, \texttt{atomic} es siempre preferible.
       \end{exampleblock}
-      \begin{alertblock}{Nota Arquitectónica}
-        Usar \texttt{atomic} dentro de \texttt{single} es redundante. Brilla cuando hay concurrencia real sin control único.
+      \begin{alertblock}{Regla General}
+        \textbf{\texttt{atomic}} para contadores/sumas simples. \textbf{\texttt{critical}} solo para bloques multilínea o memoria dispersa.
       \end{alertblock}
   \end{columns}
 \end{frame}
@@ -650,23 +692,24 @@ const int BS = 16; // Block Size
 }
 \end{lstlisting}
     \column{0.48\textwidth}
-      \begin{alertblock}{Colapso de Rendimiento ($512^2$)}
+      \begin{alertblock}{Colapso de Rendimiento (64 hilos)}
         \scriptsize
-        \renewcommand{\arraystretch}{0.9}
-        \begin{tabular}{@{}cccc@{}}
+        \renewcommand{\arraystretch}{0.85}
+        \begin{tabular}{@{}ccc@{}}
           \toprule
-          \textbf{Hilos} & \textbf{Tiempo (s)} & \textbf{Speedup} \\
+          \textbf{Malla} & \textbf{T (s)} & \textbf{Speedup} \\
           \midrule
-          4  & 124.3  & 1.43× \\
-          32 & 319.4  & 0.55× \\
-          64 & \textbf{589.7} & \textbf{0.30×} \\
+          $64^2$    & 0.427   & 0.21× \\
+          $256^2$   & 60.200  & 0.25× \\
+          $512^2$   & 380.458 & 0.46× \\
+          $1024^2$  & \textbf{8064.8} & \textbf{0.23×} \\
           \midrule
-          \multicolumn{3}{@{}c@{}}{\textbf{\texttt{parallel for} base:} 5.50 s (32.36×)} \\
+          \multicolumn{3}{@{}c@{}}{\textbf{\texttt{par. for} en $1024^2$:} 41.49 s (43.9×)} \\
           \bottomrule
         \end{tabular}
       \end{alertblock}
-      \begin{alertblock}{¿Por qué es $\approx 100\times$ más lento?}
-        Bloques $16\times16$ generan $\mathbf{1\,024}$ tareas \textbf{por iteración temporal}. El \emph{scheduler} colapsa encolando y despachando, no calculando.
+      \begin{alertblock}{¿Por qué colapsa?}
+        En $1024^2$ se generan $\mathbf{4\,096}$ tareas por iteración. El \emph{scheduler} consume todo el tiempo encolando y despachando, no calculando.
       \end{alertblock}
       \begin{exampleblock}{¿Cuándo sí usar \texttt{task}?}
         Estructuras irregulares: grafos, árboles, recursividad. Matrices densas $\rightarrow$ \texttt{parallel for}.
@@ -678,7 +721,7 @@ const int BS = 16; // Block Size
 \section{Comparación Final}
 % ============================================================
 
-\begin{frame}{Tabla Comparativa — Malla $512\times512$, 64 Hilos}
+\begin{frame}{Tabla Comparativa — Malla $1024\times1024$, 64 Hilos}
   \begin{center}
   \scriptsize
   \renewcommand{\arraystretch}{1.1}
@@ -686,16 +729,17 @@ const int BS = 16; // Block Size
     \toprule
     \textbf{Versión} & \textbf{Directiva} & \textbf{Tiempo} & \textbf{Speedup} & \textbf{Diagnóstico HPC} \\
     \midrule
-    Secuencial        & N/A                  & 177.86 s  & 1.00×   & Baseline de normalización. \\
+    Secuencial        & N/A                  & 1822.81 s  & 1.00×   & Baseline de normalización. \\
     \rowcolor{UDlight}
-    \textbf{Parallel For} & \texttt{parallel for} & \textbf{5.48 s} & \textbf{32.5×} & \textbf{Superior.} Balance óptimo. \\
-    Schedule          & \texttt{schedule}    & 5.52 s    & 32.1×   & Equivalente al básico. Estático ideal. \\
-    Collapse          & \texttt{collapse(2)} & 5.78 s    & 30.7×   & Leve penalización por índices lineales. \\
-    Sections          & \texttt{sections}    & 6.00 s    & 29.6×   & Fork-join no justificado para $O(N^2)$. \\
-    Atomic            & \texttt{atomic}      & 6.61 s    & 26.9×   & Sincronización eficiente en hardware. \\
-    Critical          & \texttt{critical}    & 7.13 s    & 24.9×   & Penalización por \emph{lock contention}. \\
+    \textbf{Schedule} & \texttt{schedule(static)} & \textbf{40.68 s} & \textbf{44.80×} & \textbf{Superior.} Partición estática ideal para dominio regular. \\
+    Parallel For & \texttt{parallel for} & 41.49 s & 43.93× & Mínima intervención. Balance óptimo. \\
+    Sync              & \texttt{nowait+barrier}  & 42.52 s    & 42.87×  & Overhead de critical anula beneficio de nowait. \\
+    Sections          & \texttt{sections}    & 47.96 s    & 38.00×   & Fork-join no justificado para $O(N^2)$. \\
+    Collapse          & \texttt{collapse(2)} & 44.62 s    & 40.85×   & Leve penalización por índices lineales. \\
+    Atomic            & \texttt{atomic}      & 49.29 s    & 36.98×   & Ventaja sobre critical se reduce en mallas grandes. \\
+    Critical          & \texttt{critical}    & 51.14 s    & 35.64×   & Penalización por \emph{lock contention}. \\
     \rowcolor{UDsecond!15}
-    \textbf{Tareas}   & \texttt{task}        & 117.5 s   & 1.51×   & \textbf{Colapso.} Planificador asfixiado. \\
+    \textbf{Tareas}   & \texttt{task}        & 8064.8 s   & 0.23×   & \textbf{Colapso Crítico.} 4096 tareas/iter asfixian el scheduler. \\
     \bottomrule
   \end{tabularx}
   \end{center}
@@ -704,11 +748,11 @@ const int BS = 16; // Block Size
     \column{0.48\textwidth}
       \begin{exampleblock}{Regla de Oro}
         Para EDPs en dominios regulares:\\
-        \textbf{parallel for + reduction} $\gg$ todo lo demás.
+        \textbf{schedule(static) / parallel for + reduction} $\gg$ todo lo demás.
       \end{exampleblock}
     \column{0.48\textwidth}
-      \begin{alertblock}{Trampa Frecuente}
-        Más hilos $\neq$ más \emph{speedup}. El \emph{overhead} domina si la carga por hilo es minúscula.
+      \begin{alertblock}{Hallazgo en $1024^2$}
+        A diferencia de mallas pequeñas, el \emph{speedup} sigue creciendo con 64 hilos. El cuello de botella se desplaza de la comunicación al cómputo puro.
       \end{alertblock}
   \end{columns}
 \end{frame}
@@ -752,24 +796,24 @@ const int BS = 16; // Block Size
     \column{0.49\textwidth}
       \begin{block}{1. Paradigma Dominante}
         \begin{itemize}
-            \item \texttt{parallel for + reduction} es superior.
+            \item \texttt{schedule(static)} y \texttt{parallel for + reduction} son superiores.
             \item La uniformidad geométrica permite distribución estática ideal.
-            \item \textbf{Speedup máx:} $32.5\times$ (64 hilos, malla $512^2$).
+            \item \textbf{Speedup máx:} $44.8\times$ (64 hilos, malla $1024^2$).
         \end{itemize}
       \end{block}
 
-      \begin{block}{2. Costo de Sincronización}
+      \begin{block}{2. Escalabilidad Creciente}
         \begin{itemize}
-          \item Hardware (\texttt{atomic}): $\sim$6.6 s
-          \item Software (\texttt{critical}): $\sim$7.1 s
-          \item Preferir siempre \texttt{atomic}.
+          \item A mayor malla, mayor fracción paralela $\alpha$.
+          \item $512^2$: $32.2\times$ \quad $\rightarrow$ \quad $1024^2$: $43.9\times$.
+          \item El overhead relativo disminuye al crecer el problema.
         \end{itemize}
       \end{block}
     \column{0.49\textwidth}
       \begin{alertblock}{3. Falla del Modelo de Tareas}
         \begin{itemize}
-            \item El \emph{runtime} colapsa encolando 1,024 tareas/iteración.
-            \item Rendimiento $117\times$ peor que \texttt{parallel for}.
+            \item En $1024^2$: 4\,096 tareas/iteración → colapso total.
+            \item Rendimiento $194\times$ peor que \texttt{parallel for}.
             \item Usar solo para grafos o recursividad.
         \end{itemize}
       \end{alertblock}
@@ -787,7 +831,7 @@ const int BS = 16; // Block Size
     \begin{tikzpicture}
       \node[fill=UDprimary,text=white,rounded corners=4pt,
             inner xsep=12pt,inner ysep=6pt,font=\bfseries\small] {
-        Veredicto final: \texttt{parallel for} con \texttt{reduction} es la solución óptima para EDPs.
+        Veredicto final: \texttt{schedule(static)} y \texttt{parallel for} son la solución óptima para EDPs.
       };
     \end{tikzpicture}
   \end{center}

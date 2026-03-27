@@ -24,23 +24,24 @@ const int BS = 16; // Block Size
 }
 \end{lstlisting}
     \column{0.48\textwidth}
-      \begin{alertblock}{Colapso de Rendimiento ($512^2$)}
+      \begin{alertblock}{Colapso de Rendimiento (64 hilos)}
         \scriptsize
-        \renewcommand{\arraystretch}{0.9}
-        \begin{tabular}{@{}cccc@{}}
+        \renewcommand{\arraystretch}{0.85}
+        \begin{tabular}{@{}ccc@{}}
           \toprule
-          \textbf{Hilos} & \textbf{Tiempo (s)} & \textbf{Speedup} \\
+          \textbf{Malla} & \textbf{T (s)} & \textbf{Speedup} \\
           \midrule
-          4  & 124.3  & 1.43× \\
-          32 & 319.4  & 0.55× \\
-          64 & \textbf{589.7} & \textbf{0.30×} \\
+          $64^2$    & 0.427   & 0.21× \\
+          $256^2$   & 60.200  & 0.25× \\
+          $512^2$   & 380.458 & 0.46× \\
+          $1024^2$  & \textbf{8064.8} & \textbf{0.23×} \\
           \midrule
-          \multicolumn{3}{@{}c@{}}{\textbf{\texttt{parallel for} base:} 5.50 s (32.36×)} \\
+          \multicolumn{3}{@{}c@{}}{\textbf{\texttt{par. for} en $1024^2$:} 41.49 s (43.9×)} \\
           \bottomrule
         \end{tabular}
       \end{alertblock}
-      \begin{alertblock}{¿Por qué es $\approx 100\times$ más lento?}
-        Bloques $16\times16$ generan $\mathbf{1\,024}$ tareas \textbf{por iteración temporal}. El \emph{scheduler} colapsa encolando y despachando, no calculando.
+      \begin{alertblock}{¿Por qué colapsa?}
+        En $1024^2$ se generan $\mathbf{4\,096}$ tareas por iteración. El \emph{scheduler} consume todo el tiempo encolando y despachando, no calculando.
       \end{alertblock}
       \begin{exampleblock}{¿Cuándo sí usar \texttt{task}?}
         Estructuras irregulares: grafos, árboles, recursividad. Matrices densas $\rightarrow$ \texttt{parallel for}.

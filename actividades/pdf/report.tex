@@ -1,4 +1,4 @@
-\documentclass[11pt,a4paper]{article}
+z\documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage[spanish]{babel}
 \usepackage{geometry}
@@ -72,23 +72,24 @@ Todas las pruebas de rendimiento registradas en este informe fueron ejecutadas e
     \item \textbf{Hilos lógicos (\textit{Threads}):} 128.
 \end{itemize}
 
-\textit{Nota metodológica:} En lugar de realizar una prueba estática, se programó un entorno de automatización (Makefile + script en C++) para realizar un barrido variando las mallas espaciales ($M \times N$) en tamaños de $50\times50$, $100\times100$ y $200\times200$. Para cada escenario se forzó explícitamente el uso de 1, 2, 4, 8, 16, 32, 64 y 80 hilos lógicos mediante \texttt{omp\_set\_num\_threads()}.
+\textit{Nota metodológica:} En lugar de realizar una prueba estática, se programó un entorno de automatización (Makefile + script en C++) para realizar un barrido variando las mallas espaciales ($M \times N$) en tamaños de $64\times64$, $128\times128$ , $256\times256$, $512\times512$ y $1024\times1024$. Para cada escenario se forzó explícitamente el uso de  4, 8, 16, 32, y 64 hilos físicps  mediante \texttt{omp\_set\_num\_threads()}.
 
 \section*{Análisis de Escalabilidad Visual}
 
-
-En la siguiente figura se exponen las curvas de rendimiento computacional para los tres tamaños de malla. Se observa una escala logarítmica tanto en el número de hilos (eje X) como en el tiempo de ejecución (eje Y).
+En la siguiente figura se exponen las curvas de rendimiento computacional para los cinco tamaños de malla estudiados ($64, 128, 256, 512$ y $1024$). Se observa una escala logarítmica tanto en el número de hilos (eje X) como en el tiempo de ejecución (eje Y).
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.48\textwidth]{../../imag/comparativa_malla_50.png}
-    \includegraphics[width=0.48\textwidth]{../../imag/comparativa_malla_100.png}
-    \includegraphics[width=0.8\textwidth]{../../imag/comparativa_malla_200.png}
-    \caption{Curvas de rendimiento para mallas 50x50, 100x100 y 200x200.}
-    \label{fig:rendimiento}
+    \includegraphics[width=0.45\textwidth]{../../imag/comparativa_malla_64.png}
+    \includegraphics[width=0.45\textwidth]{../../imag/comparativa_malla_128.png} \\
+    \includegraphics[width=0.45\textwidth]{../../imag/comparativa_malla_256.png}
+    \includegraphics[width=0.45\textwidth]{../../imag/comparativa_malla_512.png} \\
+    \includegraphics[width=0.7\textwidth]{../../imag/comparativa_malla_1024.png}
+    \caption{Curvas de rendimiento para mallas desde 64x64 hasta 1024x1024.}
+    \label{fig:rendimiento_completo}
 \end{figure}
 
-Como se evidencia en las gráficas, sin importar el tamaño de la malla, el límite de máxima eficiencia o ``punto dulce'' (\textit{sweet spot}) se alcanza a los \textbf{32 hilos}. A partir de los 64 hilos, las curvas de tiempo sufren una inflexión al alza, demostrando una degradación del rendimiento debido a la saturación del ancho de banda de la memoria compartida (cuello de botella de Von Neumann) y el sobrecosto de sincronización.
+Como se evidencía en las grafícas se puede observar que dependiendo del tamaño de la malla se encuentra un pico de eficiencia para cada problema por separado en un numero de hilos diferente, a diferencia de que tanto en las mallas de 128 y las de 256 el pico se encuentra en \textbf{32 hilos}, de 512 en adelante se evidencía que las pruebas hechas con los \textbf{65 hilos} son las que llevan la ventaja. 
 
 \section*{Análisis por Directivas}
 
@@ -102,11 +103,11 @@ A contincación se presentaran los resultados de las las diferentes implementac�
 \begin{tabular}{|c|c|c|c|l|}
 \hline
 \textbf{Tamaño de Malla ($N$)} & \textbf{Hilos} & \textbf{Tiempo de ejecución (s)} & \textbf{Iteraciones} & \textbf{Programa} \\ \hline
-64 & 1 & 0.0876946 & 3136 & serial \\ \hline
-128 & 1 & 1.22039 & 10244 & serial \\ \hline
-256 & 1 & 15.4041 & 31844 & serial \\ \hline
-512 & 1 & 177.864 & 91868 & serial \\ \hline
-1024 & 1 & \underline{\hspace{2cm}} & \underline{\hspace{2cm}} & serial \\ \hline
+64 & 1 & 0.0876937 & 3136 & serial \\ \hline
+128 & 1 & 1.19409 & 10244 & serial \\ \hline
+256 & 1 & 15.1318 & 31844 & serial \\ \hline
+512 & 1 & 176.55 & 91868 & serial \\ \hline
+1024 & 1 & 1822.81 & 236161 & serial \\ \hline
 \end{tabular}
 \caption{Resultados de ejecución y convergencia para el código base secuencial variando el tamaño de la malla con una tolerancia de $Tol=1 \times 10 ^ {-6} $.}
 \label{tab:resultados_secuenciales}
@@ -159,35 +160,40 @@ A continuación, se presentan los tiempos de ejecución (en segundos) para la di
 \begin{tabular}{|c|c|c|c|c|}
 \hline
 \textbf{Malla ($N$)} & \textbf{Hilos ($p$)} & \textbf{Tiempo (s)} & \textbf{Iteraciones} & \textbf{Speedup $S(p)$} \\ \hline
-64 & 1 (Serial) & 0.0876946 & 3136 & 1.00x \\ 
-64 & 4 & 0.0298665 & 3134 & 2.94x \\ 
-64 & 8 & 0.0228970 & 3133 & 3.83x \\ 
-64 & 16 & 0.0230676 & 3129 & 3.80x \\ 
-64 & 32 & 0.0313042 & 3161 & 2.80x \\ 
-64 & 64 & 0.0746284 & 4285 & 1.17x \\ \hline
-128 & 1 (Serial) & 1.2203900 & 10244 & 1.00x \\ 
-128 & 4 & 0.3339710 & 10242 & 3.65x \\ 
-128 & 8 & 0.1948170 & 10241 & 6.26x \\ 
-128 & 16 & 0.1319040 & 10237 & 9.25x \\ 
-128 & 32 & 0.1235640 & 10230 & 9.88x \\ 
-128 & 64 & 0.2268360 & 10667 & 5.38x \\ \hline
-256 & 1 (Serial) & 15.404100 & 31844 & 1.00x \\ 
-256 & 4 & 3.9311900 & 31842 & 3.92x \\ 
-256 & 8 & 2.0398000 & 31840 & 7.55x \\ 
-256 & 16 & 1.1410700 & 31837 & 13.50x \\ 
-256 & 32 & 0.7770640 & 31830 & 19.82x \\ 
-256 & 64 & 0.9514040 & 31817 & 16.19x \\ \hline
-512 & 1 (Serial) & 177.86400 & 91868 & 1.00x \\ 
-512 & 4 & 44.766700 & 91867 & 3.97x \\ 
-512 & 8 & 22.487300 & 91865 & 7.91x \\ 
-512 & 16 & 11.805200 & 91862 & 15.06x \\ 
-512 & 32 & 6.6315200 & 91855 & 26.82x \\ 
-512 & 64 & 5.4961000 & 91842 & 32.36x \\ \hline
+64 & 1 (Serial) & 0.0876937 & 3136 & 1.00x \\ 
+64 & 4 & 0.0312039 & 3134 & 2.81x \\ 
+64 & 8 & 0.0233430 & 3133 & 3.76x \\ 
+64 & 16 & 0.0239537 & 3129 & 3.66x \\ 
+64 & 32 & 0.0318738 & 3188 & 2.75x \\ 
+64 & 64 & 0.0760424 & 4336 & 1.15x \\ \hline
+128 & 1 (Serial) & 1.1940900 & 10244 & 1.00x \\ 
+128 & 4 & 0.3302590 & 10242 & 3.61x \\ 
+128 & 8 & 0.1870150 & 10241 & 6.38x \\ 
+128 & 16 & 0.1282790 & 10237 & 9.31x \\ 
+128 & 32 & 0.1254010 & 10230 & 9.52x \\ 
+128 & 64 & 0.2291600 & 10601 & 5.21x \\ \hline
+256 & 1 (Serial) & 15.131800 & 31844 & 1.00x \\ 
+256 & 4 & 3.8845700 & 31842 & 3.89x \\ 
+256 & 8 & 2.0132600 & 31840 & 7.51x \\ 
+256 & 16 & 1.1325100 & 31837 & 13.36x \\ 
+256 & 32 & 0.7708850 & 31830 & 19.63x \\ 
+256 & 64 & 1.0072800 & 31817 & 15.02x \\ \hline
+512 & 1 (Serial) & 176.55000 & 91868 & 1.00x \\ 
+512 & 4 & 44.499800 & 91867 & 3.97x \\ 
+512 & 8 & 22.923300 & 91865 & 7.70x \\ 
+512 & 16 & 11.820200 & 91862 & 14.93x \\ 
+512 & 32 & 6.6926400 & 91855 & 26.38x \\ 
+512 & 64 & 5.4785900 & 91842 & 32.22x \\ \hline
+1024 & 1 (Serial) & 1822.8100 & 236161 & 1.00x \\ 
+1024 & 4 & 464.33700 & 236161 & 3.93x \\ 
+1024 & 8 & 229.70800 & 236159 & 7.94x \\ 
+1024 & 16 & 117.20200 & 236156 & 15.55x \\ 
+1024 & 32 & 62.507700 & 236150 & 29.16x \\ 
+1024 & 64 & 41.494000 & 236138 & 43.93x \\ \hline
 \end{tabular}
 \caption{Desempeño de \texttt{parallel\_for} para distintos tamaños de malla y conteo de hilos.}
 \label{tab:resultados_parallel_for}
 \end{table}
-
 \subsubsection*{3. Análisis Técnico y Respuestas}
 
 \begin{enumerate}
@@ -195,7 +201,7 @@ A continuación, se presentan los tiempos de ejecución (en segundos) para la di
     Es imperativa para evitar \textit{data races}. La variable \texttt{delta} acumula el error máximo de la malla. Sin \texttt{reduction(max:delta)}, múltiples hilos intentarían sobreescribir esta variable compartida simultáneamente. Esta cláusula permite que cada hilo calcule un máximo local privado, combinándolos de forma atómica y segura al finalizar la región paralela.
 
     \item \textbf{¿Hubo mejora de rendimiento?} \\
-    Sí, logrando un escalamiento fuerte (\textit{Strong Scaling}) evidente en mallas grandes (ej. \textit{Speedup} de \textbf{32.36x} en $512 \times 512$ con 64 hilos). Sin embargo, en mallas pequeñas ($64 \times 64$), usar más de 8 hilos degrada el rendimiento. Esto ilustra la Ley de Amdahl: el \textit{overhead} del sistema operativo para gestionar los hilos supera el beneficio computacional al tener una carga de trabajo tan reducida.
+    Sí, logrando un escalamiento fuerte (\textit{Strong Scaling}) evidente en mallas grandes (ej. \textit{Speedup} de \textbf{43.93x} en $1024 \times 1024$ con 64 hilos). Sin embargo, en mallas pequeñas ($64 \times 64$), usar más de 8 hilos degrada el rendimiento. Esto ilustra la Ley de Amdahl: el \textit{overhead} del sistema operativo para gestionar los hilos supera el beneficio computacional al tener una carga de trabajo tan reducida.
 
     \item \textbf{¿Hubo diferencia en el número de iteraciones?} \\
     Sí, existe una ligera variación. Al actualizar la matriz \textit{in-place} mediante múltiples hilos, se rompe el orden estricto secuencial (Gauss-Seidel puro). Las lecturas y escrituras concurrentes generan un comportamiento no determinista en la propagación del error, alterando sutilmente la iteración exacta en la que el residuo global cumple la tolerancia.
@@ -229,35 +235,40 @@ Los tiempos de ejecución (en segundos) para la variante con \texttt{collapse(2)
 \begin{tabular}{|c|c|c|c|c|}
 \hline
 \textbf{Malla ($N$)} & \textbf{Hilos ($p$)} & \textbf{Tiempo (s)} & \textbf{Iteraciones} & \textbf{Speedup $S(p)$} \\ \hline
-64 & 1 (Serial) & 0.0876946 & 3136 & 1.00x \\ 
-64 & 4 & 0.0318604 & 3135 & 2.75x \\ 
-64 & 8 & 0.0235623 & 3133 & 3.72x \\ 
-64 & 16 & 0.0239249 & 3129 & 3.66x \\ 
-64 & 32 & 0.0370918 & 3262 & 2.36x \\ 
-64 & 64 & 0.0711667 & 3866 & 1.23x \\ \hline
-128 & 1 (Serial) & 1.2203900 & 10244 & 1.00x \\ 
-128 & 4 & 0.3619020 & 10242 & 3.37x \\ 
-128 & 8 & 0.2067300 & 10241 & 5.90x \\ 
-128 & 16 & 0.1399360 & 10237 & 8.72x \\ 
-128 & 32 & 0.1250430 & 10230 & 9.76x \\ 
-128 & 64 & 0.2326630 & 10838 & 5.24x \\ \hline
-256 & 1 (Serial) & 15.404100 & 31844 & 1.00x \\ 
-256 & 4 & 4.3170500 & 31842 & 3.56x \\ 
-256 & 8 & 2.2337600 & 31840 & 6.89x \\ 
-256 & 16 & 1.2187400 & 31837 & 12.63x \\ 
-256 & 32 & 0.8355330 & 31830 & 18.43x \\ 
-256 & 64 & 0.9712140 & 31820 & 15.86x \\ \hline
-512 & 1 (Serial) & 177.86400 & 91868 & 1.00x \\ 
-512 & 4 & 49.416800 & 91867 & 3.59x \\ 
-512 & 8 & 24.941400 & 91865 & 7.13x \\ 
-512 & 16 & 13.001700 & 91862 & 13.68x \\ 
-512 & 32 & 7.2194500 & 91855 & 24.63x \\ 
-512 & 64 & 5.8275200 & 91842 & 30.52x \\ \hline
+64 & 1 (Serial) & 0.0876937 & 3136 & 1.00x \\ 
+64 & 4 & 0.0324098 & 3134 & 2.71x \\ 
+64 & 8 & 0.0241590 & 3133 & 3.63x \\ 
+64 & 16 & 0.0238478 & 3129 & 3.68x \\ 
+64 & 32 & 0.0314899 & 3137 & 2.78x \\ 
+64 & 64 & 0.0750466 & 4125 & 1.17x \\ \hline
+128 & 1 (Serial) & 1.1940900 & 10244 & 1.00x \\ 
+128 & 4 & 0.3608980 & 10242 & 3.31x \\ 
+128 & 8 & 0.2038680 & 10241 & 5.86x \\ 
+128 & 16 & 0.1391100 & 10237 & 8.58x \\ 
+128 & 32 & 0.1238410 & 10230 & 9.64x \\ 
+128 & 64 & 0.2280480 & 10536 & 5.24x \\ \hline
+256 & 1 (Serial) & 15.131800 & 31844 & 1.00x \\ 
+256 & 4 & 4.2694700 & 31842 & 3.54x \\ 
+256 & 8 & 2.2104100 & 31840 & 6.85x \\ 
+256 & 16 & 1.2177500 & 31837 & 12.43x \\ 
+256 & 32 & 0.8218210 & 31830 & 18.41x \\ 
+256 & 64 & 0.9711080 & 31817 & 15.58x \\ \hline
+512 & 1 (Serial) & 176.55000 & 91868 & 1.00x \\ 
+512 & 4 & 49.186000 & 91867 & 3.59x \\ 
+512 & 8 & 24.932800 & 91865 & 7.08x \\ 
+512 & 16 & 13.019500 & 91862 & 13.56x \\ 
+512 & 32 & 7.3178200 & 91855 & 24.13x \\ 
+512 & 64 & 5.7811900 & 91842 & 30.54x \\ \hline
+1024 & 1 (Serial) & 1822.8100 & 236161 & 1.00x \\ 
+1024 & 4 & 516.07000 & 236161 & 3.53x \\ 
+1024 & 8 & 255.44800 & 236159 & 7.14x \\ 
+1024 & 16 & 129.47600 & 236156 & 14.08x \\ 
+1024 & 32 & 69.310000 & 236150 & 26.30x \\ 
+1024 & 64 & 44.623200 & 236139 & 40.85x \\ \hline
 \end{tabular}
 \caption{Desempeño de \texttt{collapse(2)} para distintos tamaños de malla y conteo de hilos.}
 \label{tab:resultados_collapse}
 \end{table}
-
 \subsubsection*{3. Análisis Técnico y Respuestas}
 
 \begin{enumerate}
@@ -306,41 +317,40 @@ A continuación se muestran los tiempos totales de ejecución integrando la inic
 \begin{tabular}{|c|c|c|c|c|}
 \hline
 \textbf{Malla ($N$)} & \textbf{Hilos ($p$)} & \textbf{Tiempo (s)} & \textbf{Iteraciones} & \textbf{Speedup $S(p)$} \\ \hline
-64 & 1 (Serial) & 0.0876946 & 3136 & 1.00x \\ 
-64 & 4 & 0.0336631 & 3134 & 2.60x \\ 
-64 & 8 & 0.0243871 & 3133 & 3.60x \\ 
-64 & 16 & 0.0242526 & 3129 & 3.62x \\ 
-64 & 32 & 0.0334470 & 3172 & 2.62x \\ 
-64 & 64 & 0.0716508 & 3976 & 1.22x \\ \hline
-128 & 1 (Serial) & 1.2203900 & 10244 & 1.00x \\ 
-128 & 4 & 0.3949140 & 10242 & 3.09x \\ 
-128 & 8 & 0.2243120 & 10241 & 5.44x \\ 
-128 & 16 & 0.1486540 & 10237 & 8.21x \\ 
-128 & 32 & 0.1293090 & 10230 & 9.44x \\ 
-128 & 64 & 0.2287940 & 10744 & 5.33x \\ \hline
-256 & 1 (Serial) & 15.404100 & 31844 & 1.00x \\ 
-256 & 4 & 4.7160100 & 31842 & 3.27x \\ 
-256 & 8 & 2.4282700 & 31840 & 6.34x \\ 
-256 & 16 & 1.3418100 & 31837 & 11.48x \\ 
-256 & 32 & 0.8688300 & 31830 & 17.73x \\ 
-256 & 64 & 0.9953200 & 31817 & 15.48x \\ \hline
-512 & 1 (Serial) & 177.86400 & 91868 & 1.00x \\ 
-512 & 4 & 53.958200 & 91867 & 3.30x \\ 
-512 & 8 & 27.650800 & 91865 & 6.43x \\ 
-512 & 16 & 14.058300 & 91862 & 12.65x \\ 
-512 & 32 & 7.7859500 & 91855 & 22.84x \\ 
-512 & 64 & 6.0297500 & 91843 & 29.50x \\ \hline
-1024 & 1 (Serial) & & & 1.00x \\ 
-1024 & 4 & & & \\ 
-1024 & 8 & & & \\ 
-1024 & 16 & & & \\ 
-1024 & 32 & & & \\ 
-1024 & 64 & & & \\ \hline
+64 & 1 (Serial) & 0.0876937 & 3136 & 1.00x \\ 
+64 & 4 & 0.0356070 & 3135 & 2.46x \\ 
+64 & 8 & 0.0258548 & 3133 & 3.39x \\ 
+64 & 16 & 0.0247927 & 3129 & 3.54x \\ 
+64 & 32 & 0.0325148 & 3167 & 2.70x \\ 
+64 & 64 & 0.0795554 & 4127 & 1.10x \\ \hline
+128 & 1 (Serial) & 1.1940900 & 10244 & 1.00x \\ 
+128 & 4 & 0.3857880 & 10242 & 3.10x \\ 
+128 & 8 & 0.2221100 & 10241 & 5.38x \\ 
+128 & 16 & 0.1453310 & 10237 & 8.22x \\ 
+128 & 32 & 0.1249500 & 10230 & 9.56x \\ 
+128 & 64 & 0.2350350 & 10864 & 5.08x \\ \hline
+256 & 1 (Serial) & 15.131800 & 31844 & 1.00x \\ 
+256 & 4 & 4.6567700 & 31842 & 3.25x \\ 
+256 & 8 & 2.4143200 & 31840 & 6.27x \\ 
+256 & 16 & 1.3243100 & 31837 & 11.43x \\ 
+256 & 32 & 0.8590700 & 31830 & 17.61x \\ 
+256 & 64 & 0.9283690 & 31817 & 16.30x \\ \hline
+512 & 1 (Serial) & 176.55000 & 91868 & 1.00x \\ 
+512 & 4 & 53.706000 & 91867 & 3.29x \\ 
+512 & 8 & 27.230100 & 91865 & 6.48x \\ 
+512 & 16 & 14.185700 & 91862 & 12.45x \\ 
+512 & 32 & 7.9406200 & 91855 & 22.23x \\ 
+512 & 64 & 6.0056200 & 91843 & 29.40x \\ \hline
+1024 & 1 (Serial) & 1822.8100 & 236161 & 1.00x \\ 
+1024 & 4 & 555.12700 & 236161 & 3.28x \\ 
+1024 & 8 & 278.73400 & 236159 & 6.54x \\ 
+1024 & 16 & 143.21200 & 236156 & 12.73x \\ 
+1024 & 32 & 74.973000 & 236150 & 24.31x \\ 
+1024 & 64 & 47.961900 & 236138 & 38.00x \\ \hline
 \end{tabular}
 \caption{Desempeño general utilizando \texttt{sections} en la inicialización.}
 \label{tab:resultados_sections}
 \end{table}
-
 \subsubsection*{3. Análisis Técnico y Respuestas}
 
 \begin{enumerate}
@@ -379,41 +389,40 @@ Los tiempos y factores de aceleración para la variante con \texttt{schedule(sta
 \begin{tabular}{|c|c|c|c|c|}
 \hline
 \textbf{Malla ($N$)} & \textbf{Hilos ($p$)} & \textbf{Tiempo (s)} & \textbf{Iteraciones} & \textbf{Speedup $S(p)$} \\ \hline
-64 & 1 (Serial) & 0.0876946 & 3136 & 1.00x \\ 
-64 & 4 & 0.0300428 & 3134 & 2.92x \\ 
-64 & 8 & 0.0214490 & 3133 & 4.09x \\ 
-64 & 16 & 0.0242718 & 3129 & 3.61x \\ 
-64 & 32 & 0.0322151 & 3199 & 2.72x \\ 
-64 & 64 & 0.0727916 & 4194 & 1.20x \\ \hline
-128 & 1 (Serial) & 1.2203900 & 10244 & 1.00x \\ 
-128 & 4 & 0.3308960 & 10242 & 3.69x \\ 
-128 & 8 & 0.1915170 & 10241 & 6.37x \\ 
-128 & 16 & 0.1356200 & 10237 & 9.00x \\ 
-128 & 32 & 0.1186250 & 10230 & 10.29x \\ 
-128 & 64 & 0.2241750 & 10474 & 5.44x \\ \hline
-256 & 1 (Serial) & 15.404100 & 31844 & 1.00x \\ 
-256 & 4 & 3.9221900 & 31842 & 3.93x \\ 
-256 & 8 & 2.0321700 & 31840 & 7.58x \\ 
-256 & 16 & 1.1375900 & 31837 & 13.54x \\ 
-256 & 32 & 0.7864660 & 31830 & 19.59x \\ 
-256 & 64 & 0.9597570 & 31817 & 16.05x \\ \hline
-512 & 1 (Serial) & 177.86400 & 91868 & 1.00x \\ 
-512 & 4 & 44.674700 & 91867 & 3.98x \\ 
-512 & 8 & 22.907600 & 91865 & 7.76x \\ 
-512 & 16 & 11.781500 & 91862 & 15.10x \\ 
-512 & 32 & 6.7206700 & 91855 & 26.46x \\ 
-512 & 64 & 5.5473700 & 91842 & 32.06x \\ \hline
-1024 & 1 (Serial) & & & 1.00x \\ 
-1024 & 4 & & & \\ 
-1024 & 8 & & & \\ 
-1024 & 16 & & & \\ 
-1024 & 32 & & & \\ 
-1024 & 64 & & & \\ \hline
+64 & 1 (Serial) & 0.0876937 & 3136 & 1.00x \\ 
+64 & 4 & 0.0295675 & 3134 & 2.97x \\ 
+64 & 8 & 0.0236013 & 3133 & 3.72x \\ 
+64 & 16 & 0.0243562 & 3129 & 3.60x \\ 
+64 & 32 & 0.0327476 & 3220 & 2.68x \\ 
+64 & 64 & 0.0777168 & 4341 & 1.13x \\ \hline
+128 & 1 (Serial) & 1.1940900 & 10244 & 1.00x \\ 
+128 & 4 & 0.3277350 & 10242 & 3.64x \\ 
+128 & 8 & 0.1930010 & 10241 & 6.19x \\ 
+128 & 16 & 0.1346330 & 10237 & 8.87x \\ 
+128 & 32 & 0.1196590 & 10230 & 9.98x \\ 
+128 & 64 & 0.2246840 & 10480 & 5.31x \\ \hline
+256 & 1 (Serial) & 15.131800 & 31844 & 1.00x \\ 
+256 & 4 & 3.8855400 & 31842 & 3.89x \\ 
+256 & 8 & 2.0081700 & 31840 & 7.54x \\ 
+256 & 16 & 1.1189700 & 31837 & 13.52x \\ 
+256 & 32 & 0.7598710 & 31830 & 19.91x \\ 
+256 & 64 & 0.9605050 & 31817 & 15.75x \\ \hline
+512 & 1 (Serial) & 176.55000 & 91868 & 1.00x \\ 
+512 & 4 & 44.434800 & 91867 & 3.97x \\ 
+512 & 8 & 22.601600 & 91865 & 7.81x \\ 
+512 & 16 & 11.873700 & 91862 & 14.87x \\ 
+512 & 32 & 6.6407000 & 91855 & 26.59x \\ 
+512 & 64 & 5.5174100 & 91842 & 32.00x \\ \hline
+1024 & 1 (Serial) & 1822.8100 & 236161 & 1.00x \\ 
+1024 & 4 & 457.27400 & 236161 & 3.99x \\ 
+1024 & 8 & 232.10500 & 236159 & 7.85x \\ 
+1024 & 16 & 118.68300 & 236156 & 15.36x \\ 
+1024 & 32 & 62.463100 & 236150 & 29.18x \\ 
+1024 & 64 & 40.683600 & 236138 & 44.80x \\ \hline
 \end{tabular}
 \caption{Desempeño general de la planificación \texttt{schedule(static)}.}
 \label{tab:resultados_schedule}
 \end{table}
-
 \subsubsection*{3. Análisis Técnico y Respuestas}
 
 \begin{enumerate}
@@ -468,20 +477,39 @@ for (int i = 1; i < M; ++i) {
 \begin{tabular}{|c|c|c|c|c|}
 \hline
 \textbf{Malla ($N$)} & \textbf{Hilos ($p$)} & \textbf{Tiempo (s)} & \textbf{Iteraciones} & \textbf{Speedup $S(p)$} \\ \hline
-64 & 1 (Serial) & 0.0876946 & 3136 & 1.00x \\ 
-64 & 4 & 0.0338897 & 3134 & 2.58x \\
-64 & 16 & 0.0451508 & 3129 & 1.94x \\ 
-64 & 64 & 0.1669830 & 4295 & 0.52x (Degradación) \\ \hline
-128 & 16 & 0.1976760 & 10237 & 6.17x \\ 
-128 & 64 & 0.4535210 & 10304 & 2.69x \\ \hline
-256 & 16 & 1.3233100 & 31837 & 11.64x \\ 
-256 & 64 & 1.5527700 & 31817 & 9.92x \\ \hline
-512 & 1 (Serial) & 177.86400 & 91868 & 1.00x \\ 
-512 & 16 & 12.242400 & 91862 & 14.52x \\ 
-512 & 64 & 7.1315600 & 91842 & 24.94x \\ \hline
+64 & 1 (Serial) & 0.0876937 & 3136 & 1.00x \\ 
+64 & 4 & 0.0331203 & 3134 & 2.65x \\ 
+64 & 8 & 0.0332369 & 3133 & 2.64x \\ 
+64 & 16 & 0.0478148 & 3129 & 1.83x \\ 
+64 & 32 & 0.0612208 & 3193 & 1.43x \\ 
+64 & 64 & 0.1611900 & 4264 & 0.54x \\ \hline
+128 & 1 (Serial) & 1.1940900 & 10244 & 1.00x \\ 
+128 & 4 & 0.3366090 & 10242 & 3.55x \\ 
+128 & 8 & 0.2190330 & 10241 & 5.45x \\ 
+128 & 16 & 0.1964790 & 10237 & 6.08x \\ 
+128 & 32 & 0.2133950 & 10230 & 5.59x \\ 
+128 & 64 & 0.4027350 & 10437 & 2.96x \\ \hline
+256 & 1 (Serial) & 15.131800 & 31844 & 1.00x \\ 
+256 & 4 & 3.9158900 & 31842 & 3.86x \\ 
+256 & 8 & 2.0946600 & 31840 & 7.22x \\ 
+256 & 16 & 1.3330100 & 31837 & 11.35x \\ 
+256 & 32 & 1.0344900 & 31830 & 14.63x \\ 
+256 & 64 & 1.4294300 & 31816 & 10.59x \\ \hline
+512 & 1 (Serial) & 176.55000 & 91868 & 1.00x \\ 
+512 & 4 & 45.116300 & 91867 & 3.91x \\ 
+512 & 8 & 22.826900 & 91865 & 7.73x \\ 
+512 & 16 & 12.369700 & 91862 & 14.27x \\ 
+512 & 32 & 7.6365700 & 91855 & 23.12x \\ 
+512 & 64 & 7.1297800 & 91842 & 24.76x \\ \hline
+1024 & 1 (Serial) & 1822.8100 & 236161 & 1.00x \\ 
+1024 & 4 & 456.81500 & 236161 & 3.99x \\ 
+1024 & 8 & 232.36700 & 236159 & 7.84x \\ 
+1024 & 16 & 118.52800 & 236156 & 15.38x \\ 
+1024 & 32 & 63.493900 & 236150 & 28.71x \\ 
+1024 & 64 & 42.519400 & 236138 & 42.87x \\ \hline
 \end{tabular}
-\caption{Desempeño de la implementación con sincronización manual explícita.}
-\label{tab:resultados_sync}
+\caption{Análisis completo de desempeño para sincronización manual explícita (\texttt{sync}).}
+\label{tab:resultados_sync_total}
 \end{table}
 
 \subsubsection*{3. Análisis Técnico y Respuestas}
@@ -563,20 +591,39 @@ Para ilustrar la diferencia real de rendimiento, se tabulan los tiempos de ambas
 \begin{tabular}{|c|c|c|c|c|c|}
 \hline
 \textbf{Malla} & \textbf{Hilos} & \textbf{Tiempo \texttt{critical} (s)} & \textbf{Tiempo \texttt{atomic} (s)} & \textbf{Iteraciones} & \textbf{Ventaja \texttt{atomic}} \\ \hline
-64 & 1 (Ser) & 0.0876946 & 0.0876946 & 3136 & 0\% \\ 
-64 & 4 & 0.0349447 & 0.0410154 & 3134 & -17\% (ruido) \\ 
-64 & 16 & 0.0434283 & 0.0372507 & 3129 & +14\% \\ 
-64 & 64 & 0.1689300 & 0.0918460 & 4052 & \textbf{+45\%} \\ \hline
-128 & 16 & 0.1994390 & 0.1915400 & 10237 & +4\% \\ 
-128 & 64 & 0.4785920 & 0.2780170 & 10507 & \textbf{+41\%} \\ \hline
-256 & 16 & 1.3117100 & 1.4704700 & 31837 & -12\% \\ 
-256 & 64 & 1.9460200 & 1.2075600 & 31817 & \textbf{+38\%} \\ \hline
-512 & 16 & 12.558700 & 14.548500 & 91862 & -15\% \\ 
-512 & 64 & 7.8472800 & 6.6050400 & 91842 & \textbf{+15\%} \\ \hline
-1024 & 64 & & & & \\ \hline
+64 & 1 (Ser) & 0.0876937 & 0.0876937 & 3136 & 0\% \\ 
+64 & 4 & 0.0333375 & 0.0405408 & 3134 & -21.61\% \\ 
+64 & 8 & 0.0332722 & 0.0337224 & 3133 & -1.35\% \\ 
+64 & 16 & 0.0455557 & 0.0379539 & 3129 & +16.69\% \\ 
+64 & 32 & 0.0602515 & 0.0485985 & 3218 & +19.34\% \\ 
+64 & 64 & 0.1576930 & 0.0922662 & 4295 & \textbf{+41.49\%} \\ \hline
+128 & 1 (Ser) & 1.1940900 & 1.1940900 & 10244 & 0\% \\ 
+128 & 4 & 0.3413410 & 0.4094880 & 10242 & -19.96\% \\ 
+128 & 8 & 0.2207290 & 0.2504470 & 10241 & -13.46\% \\ 
+128 & 16 & 0.1960790 & 0.1901530 & 10237 & +3.02\% \\ 
+128 & 32 & 0.2342360 & 0.1766710 & 10230 & +24.57\% \\ 
+128 & 64 & 0.5154700 & 0.2736980 & 10515 & \textbf{+46.90\%} \\ \hline
+256 & 1 (Ser) & 15.131800 & 15.131800 & 31844 & 0\% \\ 
+256 & 4 & 3.9290700 & 4.7866800 & 31842 & -21.83\% \\ 
+256 & 8 & 2.1166600 & 2.5219900 & 31840 & -19.15\% \\ 
+256 & 16 & 1.3456000 & 1.4565500 & 31837 & -8.25\% \\ 
+256 & 32 & 1.1065700 & 1.0039000 & 31830 & +9.28\% \\ 
+256 & 64 & 1.8951900 & 1.1290700 & 31817 & \textbf{+40.42\%} \\ \hline
+512 & 1 (Ser) & 176.5500 & 176.5500 & 91868 & 0\% \\ 
+512 & 4 & 44.601800 & 54.600000 & 91867 & -22.42\% \\ 
+512 & 8 & 22.930900 & 27.877600 & 91865 & -21.57\% \\ 
+512 & 16 & 12.518600 & 14.808500 & 91862 & -18.29\% \\ 
+512 & 32 & 7.7940300 & 8.2596700 & 91855 & -5.97\% \\ 
+512 & 64 & 8.5793700 & 6.6080000 & 91842 & \textbf{+22.98\%} \\ \hline
+1024 & 1 (Ser) & 1822.810 & 1822.810 & 236161 & 0\% \\ 
+1024 & 4 & 456.7040 & 561.4900 & 236161 & -22.94\% \\ 
+1024 & 8 & 233.6430 & 286.1800 & 236159 & -22.49\% \\ 
+1024 & 16 & 119.0500 & 144.7250 & 236156 & -21.57\% \\ 
+1024 & 32 & 65.816800 & 76.802300 & 236150 & -16.69\% \\ 
+1024 & 64 & 51.137700 & 49.286600 & 236138 & \textbf{+3.62\%} \\ \hline
 \end{tabular}
-\caption{Comparativa de rendimiento entre barreras de software (\texttt{critical}) y hardware (\texttt{atomic}).}
-\label{tab:resultados_atomic_critical}
+\caption{Comparativa exhaustiva de rendimiento: sincronización por software (\texttt{critical}) vs hardware (\texttt{atomic}) para diferentes densidades de malla.}
+\label{tab:resultados_completos_sincronizacion}
 \end{table}
 
 \subsubsection*{3. Análisis Técnico y Respuestas}
@@ -634,27 +681,39 @@ Los resultados exponen un colapso en el rendimiento (\textit{Performance Degrada
 \begin{tabular}{|c|c|c|c|c|}
 \hline
 \textbf{Malla ($N$)} & \textbf{Hilos ($p$)} & \textbf{Tiempo (s)} & \textbf{Iteraciones} & \textbf{Speedup $S(p)$} \\ \hline
-64 & 1 (Serial) & 0.0876946 & 3136 & 1.00x \\ 
-64 & 4 & 0.0727011 & 3147 & 1.20x \\ 
-64 & 32 & 0.1990190 & 3136 & 0.44x (Degradación) \\ 
-64 & 64 & 0.3121340 & 3137 & 0.28x (Degradación) \\ \hline
-128 & 1 (Serial) & 1.2203900 & 10244 & 1.00x \\ 
-128 & 4 & 0.8670850 & 10254 & 1.40x \\ 
-128 & 32 & 2.9037100 & 10257 & 0.42x (Degradación) \\ 
-128 & 64 & 3.8115900 & 10254 & 0.32x (Degradación) \\ \hline
-256 & 1 (Serial) & 15.404100 & 31844 & 1.00x \\ 
-256 & 4 & 9.9467300 & 32072 & 1.54x \\ 
-256 & 32 & 28.851200 & 31848 & 0.53x (Degradación) \\ 
-256 & 64 & 46.836400 & 31846 & 0.32x (Degradación) \\ \hline
-512 & 1 (Serial) & 177.86400 & 91868 & 1.00x \\ 
-512 & 4 & 124.29800 & 98194 & 1.43x \\ 
-512 & 32 & 319.35800 & 92831 & 0.55x (Degradación) \\ 
-512 & 64 & \textbf{589.65000} & 92239 & \textbf{0.30x (Degradación Crítica)} \\ \hline
-1024 & 1 (Serial) & & & 1.00x \\ 
-1024 & 64 & & & \\ \hline
+64 & 1 (Ser) & 0.0876937 & 3136 & 1.00x \\ 
+64 & 4 & 0.0806551 & 3150 & 1.09x \\ 
+64 & 8 & 0.1494780 & 3137 & 0.59x (Degradación) \\ 
+64 & 16 & 0.1877710 & 3137 & 0.47x (Degradación) \\ 
+64 & 32 & 0.2248810 & 3137 & 0.39x (Degradación) \\ 
+64 & 64 & 0.4271680 & 3137 & 0.21x (Degradación) \\ \hline
+128 & 1 (Ser) & 1.1940900 & 10244 & 1.00x \\ 
+128 & 4 & 0.8857140 & 10251 & 1.35x \\ 
+128 & 8 & 1.5981700 & 10249 & 0.75x (Degradación) \\ 
+128 & 16 & 2.0240400 & 10247 & 0.59x (Degradación) \\ 
+128 & 32 & 2.7283800 & 10258 & 0.44x (Degradación) \\ 
+128 & 64 & 4.3507500 & 10246 & 0.27x (Degradación) \\ \hline
+256 & 1 (Ser) & 15.131800 & 31844 & 1.00x \\ 
+256 & 4 & 10.343000 & 32057 & 1.46x \\ 
+256 & 8 & 22.418800 & 31853 & 0.67x (Degradación) \\ 
+256 & 16 & 29.597200 & 31857 & 0.51x (Degradación) \\ 
+256 & 32 & 27.301400 & 31907 & 0.55x (Degradación) \\ 
+256 & 64 & 60.200400 & 31846 & 0.25x (Degradación) \\ \hline
+512 & 1 (Ser) & 176.55000 & 91868 & 1.00x \\ 
+512 & 4 & 117.51900 & 98276 & 1.50x \\ 
+512 & 8 & 214.34800 & 92319 & 0.82x (Degradación) \\ 
+512 & 16 & 339.73200 & 91927 & 0.52x (Degradación) \\ 
+512 & 32 & 285.45800 & 92682 & 0.62x (Degradación) \\ 
+512 & 64 & 380.45800 & 91982 & 0.46x (Degradación) \\ \hline
+1024 & 1 (Ser) & 1822.8100 & 236161 & 1.00x \\ 
+1024 & 4 & 1289.2300 & 262398 & 1.41x \\ 
+1024 & 8 & 2374.8900 & 238293 & 0.77x (Degradación) \\ 
+1024 & 16 & 3410.9800 & 237383 & 0.53x (Degradación) \\ 
+1024 & 32 & 4483.8200 & 243441 & 0.41x (Degradación) \\ 
+1024 & 64 & \textbf{8064.8000} & 239665 & \textbf{0.23x (Degradación Crítica)} \\ \hline
 \end{tabular}
-\caption{Desempeño de la directiva \texttt{task} con bloques fijos.}
-\label{tab:resultados_task}
+\caption{Desempeño de la directiva \texttt{task} con bloques fijos: Se observa una inversión del speedup a partir de 8 hilos debido al overhead de gestión.}
+\label{tab:resultados_task_v2}
 \end{table}
 
 \subsubsection*{3. Análisis Técnico y Respuestas}

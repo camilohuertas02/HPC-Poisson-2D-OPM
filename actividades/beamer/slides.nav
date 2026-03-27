@@ -19,60 +19,64 @@
 \headcommand {\sectionentry {3}{Análisis de Escalabilidad}{6}{Análisis de Escalabilidad}{0}}
 \headcommand {\slideentry {3}{0}{1}{6/6}{}{0}}
 \headcommand {\beamer@framepages {6}{6}}
-\headcommand {\beamer@sectionpages {6}{6}}
-\headcommand {\beamer@subsectionpages {6}{6}}
-\headcommand {\sectionentry {4}{Actividad 1 — \texttt {parallel for}}{7}{Actividad 1 — \texttt {parallel for}}{0}}
-\headcommand {\slideentry {4}{0}{1}{7/7}{}{0}}
+\headcommand {\slideentry {3}{0}{2}{7/7}{}{0}}
 \headcommand {\beamer@framepages {7}{7}}
-\headcommand {\beamer@sectionpages {7}{7}}
-\headcommand {\beamer@subsectionpages {7}{7}}
-\headcommand {\sectionentry {5}{Actividad 2 — \texttt {collapse(2)}}{8}{Actividad 2 — \texttt {collapse(2)}}{0}}
-\headcommand {\slideentry {5}{0}{1}{8/8}{}{0}}
+\headcommand {\slideentry {3}{0}{3}{8/8}{}{0}}
 \headcommand {\beamer@framepages {8}{8}}
-\headcommand {\beamer@sectionpages {8}{8}}
-\headcommand {\beamer@subsectionpages {8}{8}}
-\headcommand {\sectionentry {6}{Actividad 3 — \texttt {sections}}{9}{Actividad 3 — \texttt {sections}}{0}}
-\headcommand {\slideentry {6}{0}{1}{9/9}{}{0}}
+\headcommand {\beamer@sectionpages {6}{8}}
+\headcommand {\beamer@subsectionpages {6}{8}}
+\headcommand {\sectionentry {4}{Actividad 1 — \texttt {parallel for}}{9}{Actividad 1 — \texttt {parallel for}}{0}}
+\headcommand {\slideentry {4}{0}{1}{9/9}{}{0}}
 \headcommand {\beamer@framepages {9}{9}}
 \headcommand {\beamer@sectionpages {9}{9}}
 \headcommand {\beamer@subsectionpages {9}{9}}
-\headcommand {\sectionentry {7}{Actividad 4 — \texttt {schedule}}{10}{Actividad 4 — \texttt {schedule}}{0}}
-\headcommand {\slideentry {7}{0}{1}{10/10}{}{0}}
+\headcommand {\sectionentry {5}{Actividad 2 — \texttt {collapse(2)}}{10}{Actividad 2 — \texttt {collapse(2)}}{0}}
+\headcommand {\slideentry {5}{0}{1}{10/10}{}{0}}
 \headcommand {\beamer@framepages {10}{10}}
 \headcommand {\beamer@sectionpages {10}{10}}
 \headcommand {\beamer@subsectionpages {10}{10}}
-\headcommand {\sectionentry {8}{Actividad 5 — Sincronización Explícita}{11}{Actividad 5 — Sincronización Explícita}{0}}
-\headcommand {\slideentry {8}{0}{1}{11/11}{}{0}}
+\headcommand {\sectionentry {6}{Actividad 3 — \texttt {sections}}{11}{Actividad 3 — \texttt {sections}}{0}}
+\headcommand {\slideentry {6}{0}{1}{11/11}{}{0}}
 \headcommand {\beamer@framepages {11}{11}}
 \headcommand {\beamer@sectionpages {11}{11}}
 \headcommand {\beamer@subsectionpages {11}{11}}
-\headcommand {\sectionentry {9}{Actividad 6 — \texttt {critical} vs \texttt {atomic}}{12}{Actividad 6 — \texttt {critical} vs \texttt {atomic}}{0}}
-\headcommand {\slideentry {9}{0}{1}{12/12}{}{0}}
+\headcommand {\sectionentry {7}{Actividad 4 — \texttt {schedule}}{12}{Actividad 4 — \texttt {schedule}}{0}}
+\headcommand {\slideentry {7}{0}{1}{12/12}{}{0}}
 \headcommand {\beamer@framepages {12}{12}}
 \headcommand {\beamer@sectionpages {12}{12}}
 \headcommand {\beamer@subsectionpages {12}{12}}
-\headcommand {\sectionentry {10}{Actividad 7 — \texttt {task}}{13}{Actividad 7 — \texttt {task}}{0}}
-\headcommand {\slideentry {10}{0}{1}{13/13}{}{0}}
+\headcommand {\sectionentry {8}{Actividad 5 — Sincronización Explícita}{13}{Actividad 5 — Sincronización Explícita}{0}}
+\headcommand {\slideentry {8}{0}{1}{13/13}{}{0}}
 \headcommand {\beamer@framepages {13}{13}}
 \headcommand {\beamer@sectionpages {13}{13}}
 \headcommand {\beamer@subsectionpages {13}{13}}
-\headcommand {\sectionentry {11}{Comparación Final}{14}{Comparación Final}{0}}
-\headcommand {\slideentry {11}{0}{1}{14/14}{}{0}}
+\headcommand {\sectionentry {9}{Actividad 6 — \texttt {critical} vs \texttt {atomic}}{14}{Actividad 6 — \texttt {critical} vs \texttt {atomic}}{0}}
+\headcommand {\slideentry {9}{0}{1}{14/14}{}{0}}
 \headcommand {\beamer@framepages {14}{14}}
 \headcommand {\beamer@sectionpages {14}{14}}
 \headcommand {\beamer@subsectionpages {14}{14}}
-\headcommand {\sectionentry {12}{Validación Numérica}{15}{Validación Numérica}{0}}
-\headcommand {\slideentry {12}{0}{1}{15/15}{}{0}}
+\headcommand {\sectionentry {10}{Actividad 7 — \texttt {task}}{15}{Actividad 7 — \texttt {task}}{0}}
+\headcommand {\slideentry {10}{0}{1}{15/15}{}{0}}
 \headcommand {\beamer@framepages {15}{15}}
 \headcommand {\beamer@sectionpages {15}{15}}
 \headcommand {\beamer@subsectionpages {15}{15}}
-\headcommand {\sectionentry {13}{Conclusiones}{16}{Conclusiones}{0}}
-\headcommand {\slideentry {13}{0}{1}{16/16}{}{0}}
+\headcommand {\sectionentry {11}{Comparación Final}{16}{Comparación Final}{0}}
+\headcommand {\slideentry {11}{0}{1}{16/16}{}{0}}
 \headcommand {\beamer@framepages {16}{16}}
-\headcommand {\slideentry {13}{0}{2}{17/17}{}{0}}
+\headcommand {\beamer@sectionpages {16}{16}}
+\headcommand {\beamer@subsectionpages {16}{16}}
+\headcommand {\sectionentry {12}{Validación Numérica}{17}{Validación Numérica}{0}}
+\headcommand {\slideentry {12}{0}{1}{17/17}{}{0}}
 \headcommand {\beamer@framepages {17}{17}}
-\headcommand {\beamer@partpages {1}{17}}
-\headcommand {\beamer@subsectionpages {16}{17}}
-\headcommand {\beamer@sectionpages {16}{17}}
-\headcommand {\beamer@documentpages {17}}
-\headcommand {\gdef \inserttotalframenumber {17}}
+\headcommand {\beamer@sectionpages {17}{17}}
+\headcommand {\beamer@subsectionpages {17}{17}}
+\headcommand {\sectionentry {13}{Conclusiones}{18}{Conclusiones}{0}}
+\headcommand {\slideentry {13}{0}{1}{18/18}{}{0}}
+\headcommand {\beamer@framepages {18}{18}}
+\headcommand {\slideentry {13}{0}{2}{19/19}{}{0}}
+\headcommand {\beamer@framepages {19}{19}}
+\headcommand {\beamer@partpages {1}{19}}
+\headcommand {\beamer@subsectionpages {18}{19}}
+\headcommand {\beamer@sectionpages {18}{19}}
+\headcommand {\beamer@documentpages {19}}
+\headcommand {\gdef \inserttotalframenumber {19}}

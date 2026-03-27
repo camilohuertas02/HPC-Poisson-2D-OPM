@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2025/dev/Debian) (preloaded format=pdflatex 2026.1.5)  26 MAR 2026 20:50
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2025/dev/Debian) (preloaded format=pdflatex 2026.1.5)  27 MAR 2026 09:14
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -6,6 +6,17 @@ entering extended mode
 (./report.tex
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
+
+! LaTeX Error: Missing \begin{document}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.1 z
+     \documentclass[11pt,a4paper]{article}
+? 
+Missing character: There is no z in font nullfont!
 (/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
 Document Class: article 2024/06/29 v1.4n Standard LaTeX document class
 (/usr/share/texlive/texmf-dist/tex/latex/base/size11.clo
@@ -17,12 +28,19 @@ File: size11.clo 2024/06/29 v1.4n Standard LaTeX file (size option)
 \c@subsubsection=\count199
 \c@paragraph=\count266
 \c@subparagraph=\count267
+
+Overfull \hbox (20.0pt too wide) in paragraph at lines 1--274
+[]
+ []
+
 \c@figure=\count268
 \c@table=\count269
 \abovecaptionskip=\skip49
 \belowcaptionskip=\skip50
 \bibindent=\dimen141
-)
+
+
+[1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}])
 (/usr/share/texlive/texmf-dist/tex/latex/base/inputenc.sty
 Package: inputenc 2024/02/08 v1.3d Input encoding file
 \inpenc@prehook=\toks17
@@ -406,6 +424,10 @@ File: l3backend-pdftex.def 2024-05-08 L3 backend support: PDF output (pdfTeX)
 (./report.aux
 LaTeX Info: Redefining \. on input line 11.
 LaTeX Info: Redefining \% on input line 11.
+
+
+LaTeX Warning: Label `tab:comparativa_final' multiply defined.
+
 )
 \openout1 = `report.aux'.
 
@@ -493,40 +515,51 @@ Package hyperref Info: Link coloring OFF on input line 58.
 \openout3 = `report.out'.
 
 \c@lstlisting=\count321
-<../imag/comparativa_malla_50.png, id=4, 803.0pt x 602.25pt>
-File: ../imag/comparativa_malla_50.png Graphic file (type png)
-<use ../imag/comparativa_malla_50.png>
-Package pdftex.def Info: ../imag/comparativa_malla_50.png  used on input line 8
-4.
-(pdftex.def)             Requested size: 218.51521pt x 163.88702pt.
-<../imag/comparativa_malla_100.png, id=5, 803.0pt x 602.25pt>
-File: ../imag/comparativa_malla_100.png Graphic file (type png)
-<use ../imag/comparativa_malla_100.png>
-Package pdftex.def Info: ../imag/comparativa_malla_100.png  used on input line 
-85.
-(pdftex.def)             Requested size: 218.51521pt x 163.88702pt.
-<../imag/comparativa_malla_200.png, id=6, 803.0pt x 602.25pt>
-File: ../imag/comparativa_malla_200.png Graphic file (type png)
-<use ../imag/comparativa_malla_200.png>
-Package pdftex.def Info: ../imag/comparativa_malla_200.png  used on input line 
-86.
-(pdftex.def)             Requested size: 364.19667pt x 273.15117pt.
+<../../imag/comparativa_malla_64.png, id=8, 803.0pt x 602.25pt>
+File: ../../imag/comparativa_malla_64.png Graphic file (type png)
+<use ../../imag/comparativa_malla_64.png>
+Package pdftex.def Info: ../../imag/comparativa_malla_64.png  used on input lin
+e 83.
+(pdftex.def)             Requested size: 204.85846pt x 153.64064pt.
+<../../imag/comparativa_malla_128.png, id=9, 803.0pt x 602.25pt>
+File: ../../imag/comparativa_malla_128.png Graphic file (type png)
+<use ../../imag/comparativa_malla_128.png>
+Package pdftex.def Info: ../../imag/comparativa_malla_128.png  used on input li
+ne 84.
+(pdftex.def)             Requested size: 204.85846pt x 153.64064pt.
+<../../imag/comparativa_malla_256.png, id=10, 803.0pt x 602.25pt>
+File: ../../imag/comparativa_malla_256.png Graphic file (type png)
+<use ../../imag/comparativa_malla_256.png>
+Package pdftex.def Info: ../../imag/comparativa_malla_256.png  used on input li
+ne 85.
+(pdftex.def)             Requested size: 204.85846pt x 153.64064pt.
+<../../imag/comparativa_malla_512.png, id=11, 803.0pt x 602.25pt>
+File: ../../imag/comparativa_malla_512.png Graphic file (type png)
+<use ../../imag/comparativa_malla_512.png>
+Package pdftex.def Info: ../../imag/comparativa_malla_512.png  used on input li
+ne 86.
+(pdftex.def)             Requested size: 204.85846pt x 153.64064pt.
+<../../imag/comparativa_malla_1024.png, id=12, 803.0pt x 602.25pt>
+File: ../../imag/comparativa_malla_1024.png Graphic file (type png)
+<use ../../imag/comparativa_malla_1024.png>
+Package pdftex.def Info: ../../imag/comparativa_malla_1024.png  used on input l
+ine 87.
+(pdftex.def)             Requested size: 318.66948pt x 239.00267pt.
 
 
-[1
+[2
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-Overfull \hbox (2.18677pt too wide) in paragraph at lines 102--111
+]
+
+[3 <../../imag/comparativa_malla_64.png> <../../imag/comparativa_malla_128.png>
+ <../../imag/comparativa_malla_256.png> <../../imag/comparativa_malla_512.png> 
+<../../imag/comparativa_malla_1024.png>]
+Overfull \hbox (2.18677pt too wide) in paragraph at lines 103--112
  [][] 
  []
 
-
-
-[2 <../imag/comparativa_malla_50.png> <../imag/comparativa_malla_100.png> <../i
-mag/comparativa_malla_200.png>]
 LaTeX Font Info:    Font shape `OT1/cmtt/bx/n' in size <12> not available
-(Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 116.
-
+(Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 117.
 (/usr/share/texlive/texmf-dist/tex/latex/listings/lstlang1.sty
 File: lstlang1.sty 2024/09/23 1.10c listings language file
 )
@@ -537,7 +570,7 @@ File: lstlang1.sty 2024/09/23 1.10c listings language file
 File: lstmisc.sty 2024/09/23 1.10c (Carsten Heinz)
 )
 Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
-nput line 123.
+nput line 124.
 
 
 ! LaTeX Error: Invalid UTF-8 byte sequence (肻expandafter).
@@ -546,7 +579,7 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.130         // Sincronizaci贸n 
+l.131         // Sincronizaci贸n 
                                  optimizada mediante reducci贸n at贸mica de ...
 
 ? 
@@ -557,7 +590,7 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.130         // Sincronizaci贸n 
+l.131         // Sincronizaci贸n 
                                  optimizada mediante reducci贸n at贸mica de ...
 
 ? 
@@ -568,7 +601,7 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.130 ...nizaci贸n optimizada mediante reducci贸n 
+l.131 ...nizaci贸n optimizada mediante reducci贸n 
                                                   at贸mica de OpenMP
 ? 
 
@@ -578,7 +611,7 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.130 ...nizaci贸n optimizada mediante reducci贸n 
+l.131 ...nizaci贸n optimizada mediante reducci贸n 
                                                   at贸mica de OpenMP
 ? 
 
@@ -588,7 +621,7 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.130 ... optimizada mediante reducci贸n at贸mica 
+l.131 ... optimizada mediante reducci贸n at贸mica 
                                                   de OpenMP
 ? 
 
@@ -598,7 +631,7 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.130 ... optimizada mediante reducci贸n at贸mica 
+l.131 ... optimizada mediante reducci贸n at贸mica 
                                                   de OpenMP
 ? 
 
@@ -608,7 +641,7 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.136                 // Discretizaci贸n 
+l.137                 // Discretizaci贸n 
                                          por diferencias finitas (esquema ce...
 
 ? 
@@ -619,7 +652,7 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.136                 // Discretizaci贸n 
+l.137                 // Discretizaci贸n 
                                          por diferencias finitas (esquema ce...
 
 ? 
@@ -630,7 +663,7 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.139                 // C谩lculo 
+l.140                 // C谩lculo 
                                   del residuo local
 ? 
 
@@ -640,179 +673,133 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.139                 // C谩lculo 
+l.140                 // C谩lculo 
                                   del residuo local
 ? 
 
-Overfull \hbox (25.30806pt too wide) in paragraph at lines 153--154
+
+[4]
+Overfull \hbox (25.30806pt too wide) in paragraph at lines 154--155
 []\OT1/cmr/m/n/10.95 A con-ti-nua-ci^^Son, se pre-sen-tan los tiem-pos de eje-c
 u-ci^^Son (en se-gun-dos) pa-ra la di-rec-ti-va \OT1/cmtt/m/n/10.95 parallel[]f
 or
  []
 
-
-
-[3]
 LaTeX Font Info:    Font shape `OT1/cmtt/bx/n' in size <10.95> not available
-(Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 194.
-
-
-[4]
-
-! LaTeX Error: Invalid UTF-8 byte sequence (肻expandafter).
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.219         // Discretizaci贸n 
-                                 y c谩lculo del residuo
-? 
-
-! LaTeX Error: Invalid UTF-8 byte "B3.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.219         // Discretizaci贸n 
-                                 y c谩lculo del residuo
-? 
-
-! LaTeX Error: Invalid UTF-8 byte sequence (肻expandafter).
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.219         // Discretizaci贸n y c谩lculo 
-                                            del residuo
-? 
-
-! LaTeX Error: Invalid UTF-8 byte "A1.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.219         // Discretizaci贸n y c谩lculo 
-                                            del residuo
-? 
+(Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 200.
 
 
 [5]
 
+! LaTeX Error: Invalid UTF-8 byte sequence (肻expandafter).
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.225         // Discretizaci贸n 
+                                 y c谩lculo del residuo
+? 
+
+! LaTeX Error: Invalid UTF-8 byte "B3.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.225         // Discretizaci贸n 
+                                 y c谩lculo del residuo
+? 
+
+! LaTeX Error: Invalid UTF-8 byte sequence (肻expandafter).
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.225         // Discretizaci贸n y c谩lculo 
+                                            del residuo
+? 
+
+! LaTeX Error: Invalid UTF-8 byte "A1.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.225         // Discretizaci贸n y c谩lculo 
+                                            del residuo
+? 
+
+
 [6]
-
-! LaTeX Error: Invalid UTF-8 byte sequence (肻expandafter).
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.284 // Asignaci贸n 
-                     de memoria obligatoria en el hilo maestro (serial)
-? 
-
-! LaTeX Error: Invalid UTF-8 byte "B3.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.284 // Asignaci贸n 
-                     de memoria obligatoria en el hilo maestro (serial)
-? 
-
-! LaTeX Error: Invalid UTF-8 byte sequence (肻expandafter).
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.288 // Bifurcaci贸n 
-                      de tareas independientes
-? 
-
-! LaTeX Error: Invalid UTF-8 byte "B3.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.288 // Bifurcaci贸n 
-                      de tareas independientes
-? 
-
 
 [7]
 
+! LaTeX Error: Invalid UTF-8 byte sequence (肻expandafter).
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.295 // Asignaci贸n 
+                     de memoria obligatoria en el hilo maestro (serial)
+? 
+
+! LaTeX Error: Invalid UTF-8 byte "B3.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.295 // Asignaci贸n 
+                     de memoria obligatoria en el hilo maestro (serial)
+? 
+
+! LaTeX Error: Invalid UTF-8 byte sequence (肻expandafter).
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.299 // Bifurcaci贸n 
+                      de tareas independientes
+? 
+
+! LaTeX Error: Invalid UTF-8 byte "B3.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.299 // Bifurcaci贸n 
+                      de tareas independientes
+? 
+
+
 [8]
-
-! LaTeX Error: Invalid UTF-8 byte sequence (肻expandafter).
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.362 // 1. Creaci贸n 
-                      del equipo de hilos (Fork)
-? 
-
-! LaTeX Error: Invalid UTF-8 byte "B3.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.362 // 1. Creaci贸n 
-                      del equipo de hilos (Fork)
-? 
-
-! LaTeX Error: Invalid UTF-8 byte sequence (肻expandafter).
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.365     // 2. Distribuci贸n 
-                              de carga de trabajo precalculada
-? 
-
-! LaTeX Error: Invalid UTF-8 byte "B3.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.365     // 2. Distribuci贸n 
-                              de carga de trabajo precalculada
-? 
-
-! LaTeX Error: Invalid UTF-8 byte sequence (肻expandafter).
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.369             // Discretizaci贸n 
-                                     de Poisson (Carga FLOP uniforme)
-? 
-
-! LaTeX Error: Invalid UTF-8 byte "B3.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.369             // Discretizaci贸n 
-                                     de Poisson (Carga FLOP uniforme)
-? 
-
 
 [9]
 
-[10]
+! LaTeX Error: Invalid UTF-8 byte sequence (肻expandafter).
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.372 // 1. Creaci贸n 
+                      del equipo de hilos (Fork)
+? 
+
+! LaTeX Error: Invalid UTF-8 byte "B3.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.372 // 1. Creaci贸n 
+                      del equipo de hilos (Fork)
+? 
 
 ! LaTeX Error: Invalid UTF-8 byte sequence (肻expandafter).
 
@@ -820,7 +807,52 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.438 // Eliminaci贸n 
+l.375     // 2. Distribuci贸n 
+                              de carga de trabajo precalculada
+? 
+
+! LaTeX Error: Invalid UTF-8 byte "B3.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.375     // 2. Distribuci贸n 
+                              de carga de trabajo precalculada
+? 
+
+! LaTeX Error: Invalid UTF-8 byte sequence (肻expandafter).
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.379             // Discretizaci贸n 
+                                     de Poisson (Carga FLOP uniforme)
+? 
+
+! LaTeX Error: Invalid UTF-8 byte "B3.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.379             // Discretizaci贸n 
+                                     de Poisson (Carga FLOP uniforme)
+? 
+
+
+[10]
+
+[11]
+
+! LaTeX Error: Invalid UTF-8 byte sequence (肻expandafter).
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.447 // Eliminaci贸n 
                       de la barrera impl铆cita
 ? 
 
@@ -830,7 +862,7 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.438 // Eliminaci贸n 
+l.447 // Eliminaci贸n 
                       de la barrera impl铆cita
 ? 
 
@@ -840,7 +872,7 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.438 // Eliminaci贸n de la barrera impl铆cita
+l.447 // Eliminaci贸n de la barrera impl铆cita
                                               
 ? 
 
@@ -850,7 +882,7 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.438 // Eliminaci贸n de la barrera impl铆cita
+l.447 // Eliminaci贸n de la barrera impl铆cita
                                               
 ? 
 
@@ -860,7 +892,7 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.442         // ... C谩lculo 
+l.451         // ... C谩lculo 
                               de diferencias finitas ...
 ? 
 
@@ -870,7 +902,7 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.442         // ... C谩lculo 
+l.451         // ... C谩lculo 
                               de diferencias finitas ...
 ? 
 
@@ -880,7 +912,7 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.447 // Serializaci贸n 
+l.456 // Serializaci贸n 
                         forzada para escritura segura
 ? 
 
@@ -890,7 +922,7 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.447 // Serializaci贸n 
+l.456 // Serializaci贸n 
                         forzada para escritura segura
 ? 
 
@@ -900,7 +932,7 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.453 // Barrera expl铆cita 
+l.462 // Barrera expl铆cita 
                             para garantizar que todos actualizaron 'delta'
 ? 
 
@@ -910,65 +942,68 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.453 // Barrera expl铆cita 
+l.462 // Barrera expl铆cita 
                             para garantizar que todos actualizaron 'delta'
 ? 
-
-
-[11]
-Underfull \hbox (badness 10000) in paragraph at lines 515--515
-[]|\OT1/cmtt/m/n/10 parallel for
- []
-
-
-Underfull \hbox (badness 1005) in paragraph at lines 516--516
-[]|\OT1/cmr/m/n/10 Penalizaci^^Son le-ve por
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 518--518
-[]|\OT1/cmr/m/n/10 Rendimiento ^^Sopti-mo
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 519--519
-[]|\OT1/cmtt/m/n/10 critical /
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 519--519
-[]|\OT1/cmr/m/n/10 Embotellamiento del
- []
-
-
-Underfull \hbox (badness 1371) in paragraph at lines 519--519
-\OT1/cmr/m/n/10 bus de me-mo-ria por
- []
-
-
-Overfull \hbox (2.1856pt too wide) in paragraph at lines 511--521
- [][] 
- []
-
 
 
 [12]
 
 [13]
-LaTeX Font Info:    Font shape `OT1/cmtt/bx/n' in size <10> not available
-(Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 565.
-LaTeX Font Info:    Trying to load font information for OMS+cmtt on input line 
-589.
-LaTeX Font Info:    No file OMScmtt.fd. on input line 589.
+Underfull \hbox (badness 10000) in paragraph at lines 543--543
+[]|\OT1/cmtt/m/n/10 parallel for
+ []
 
 
-LaTeX Font Warning: Font shape `OMS/cmtt/m/n' undefined
-(Font)              using `OMS/cmsy/m/n' instead
-(Font)              for symbol `textbraceleft' on input line 589.
+Underfull \hbox (badness 1005) in paragraph at lines 544--544
+[]|\OT1/cmr/m/n/10 Penalizaci^^Son le-ve por
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 546--546
+[]|\OT1/cmr/m/n/10 Rendimiento ^^Sopti-mo
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 547--547
+[]|\OT1/cmtt/m/n/10 critical /
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 547--547
+[]|\OT1/cmr/m/n/10 Embotellamiento del
+ []
+
+
+Underfull \hbox (badness 1371) in paragraph at lines 547--547
+\OT1/cmr/m/n/10 bus de me-mo-ria por
+ []
+
+
+Overfull \hbox (2.1856pt too wide) in paragraph at lines 539--549
+ [][] 
+ []
 
 
 
 [14]
+LaTeX Font Info:    Font shape `OT1/cmtt/bx/n' in size <10> not available
+(Font)              Font shape `OT1/cmtt/m/n' tried instead on input line 593.
+
+
+[15]
+LaTeX Font Info:    Trying to load font information for OMS+cmtt on input line 
+636.
+LaTeX Font Info:    No file OMScmtt.fd. on input line 636.
+
+
+LaTeX Font Warning: Font shape `OMS/cmtt/m/n' undefined
+(Font)              using `OMS/cmsy/m/n' instead
+(Font)              for symbol `textbraceleft' on input line 636.
+
+
+
+[16]
 
 ! LaTeX Error: Invalid UTF-8 byte sequence (肻expandafter).
 
@@ -976,7 +1011,7 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.615                     // ... (C谩lculo 
+l.662                     // ... (C谩lculo 
                                            de diferencias finitas) ...
 ? 
 
@@ -986,7 +1021,7 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.615                     // ... (C谩lculo 
+l.662                     // ... (C谩lculo 
                                            de diferencias finitas) ...
 ? 
 
@@ -996,7 +1031,7 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.622     } // taskwait impl铆cito 
+l.669     } // taskwait impl铆cito 
                                    al salir del bloque single
 ? 
 
@@ -1006,77 +1041,79 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.622     } // taskwait impl铆cito 
+l.669     } // taskwait impl铆cito 
                                    al salir del bloque single
 ? 
 
 
-[15]
-Overfull \hbox (6.93625pt too wide) in paragraph at lines 672--673
+[17]
+
+[18]
+Overfull \hbox (6.93625pt too wide) in paragraph at lines 731--732
 []\OT1/cmr/m/n/10.95 Aplicar \OT1/cmtt/m/n/10.95 task \OT1/cmr/m/n/10.95 a una 
 ma-triz re-gu-lar sin un ajus-te pa-ram^^Setri-co se-ve-ro (au-men-tan-do el \O
 T1/cmtt/m/n/10.95 block[]size
  []
 
 
-
-[16]
-Underfull \hbox (badness 6592) in paragraph at lines 694--694
+Underfull \hbox (badness 6592) in paragraph at lines 753--753
 []|\OT1/cmr/bx/n/10.95 Eficiencia HPC y
  []
 
 
-Underfull \hbox (badness 2435) in paragraph at lines 694--694
+Underfull \hbox (badness 2435) in paragraph at lines 753--753
 []|\OT1/cmr/bx/n/10.95 Rendimiento Su-pe-
  []
 
 
-Underfull \hbox (badness 1975) in paragraph at lines 694--694
+Underfull \hbox (badness 1975) in paragraph at lines 753--753
 \OT1/cmr/bx/n/10.95 rior. \OT1/cmr/m/n/10.95 Ba-lan-ce ^^Sopti-mo
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 694--694
+Underfull \hbox (badness 10000) in paragraph at lines 753--753
 \OT1/cmr/m/n/10.95 en-tre car-ga compu-
  []
 
 
-Underfull \hbox (badness 1331) in paragraph at lines 694--694
+Underfull \hbox (badness 1331) in paragraph at lines 753--753
 \OT1/cmr/m/n/10.95 tacio-nal y ges-ti^^Son de
  []
 
 
-Underfull \hbox (badness 2818) in paragraph at lines 694--694
+Underfull \hbox (badness 2818) in paragraph at lines 753--753
 []|\OT1/cmr/m/n/10.95 Pr^^Sacti-ca-men-te equi-va-
  []
 
 
-Underfull \hbox (badness 4391) in paragraph at lines 694--694
+Underfull \hbox (badness 4391) in paragraph at lines 753--753
 []|\OT1/cmr/m/n/10.95 Leve pe-na-li-za-ci^^Son de
  []
 
 
-Underfull \hbox (badness 3579) in paragraph at lines 694--694
+Underfull \hbox (badness 3579) in paragraph at lines 753--753
 []|\OT1/cmr/m/n/10.95 Sincronizaci^^Son efi-cien-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 694--694
+Underfull \hbox (badness 10000) in paragraph at lines 753--753
 \OT1/cmr/m/n/10.95 blo-queos se-cuen-cia-les
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 694--694
+Underfull \hbox (badness 10000) in paragraph at lines 753--753
 []|\OT1/cmr/bx/n/10.95 Colapso Ar-qui-
  []
 
 
-Underfull \hbox (badness 2253) in paragraph at lines 694--694
+Underfull \hbox (badness 2253) in paragraph at lines 753--753
 \OT1/cmr/bx/n/10.95 tect^^Soni-co. \OT1/cmr/m/n/10.95 Gra-nu-la-ri-
  []
 
 
-Overfull \hbox (59.76454pt too wide) in paragraph at lines 702--703
+
+[19]
+Overfull \hbox (59.76454pt too wide) in paragraph at lines 761--762
 []\OT1/cmr/bx/n/10.95 El Pa-ra-dig-ma Do-mi-nan-te: \OT1/cmr/m/n/10.95 El pa-ra
 -le-lis-mo de da-tos tra-di-cio-nal (\OT1/cmtt/m/n/10.95 parallel for \OT1/cmr/
 m/n/10.95 y \OT1/cmtt/m/n/10.95 schedule(static)\OT1/cmr/m/n/10.95 )
@@ -1084,26 +1121,27 @@ m/n/10.95 y \OT1/cmtt/m/n/10.95 schedule(static)\OT1/cmr/m/n/10.95 )
 
 
 
-[17]
-<../imag/solucion_poisson_atomic.png, id=287, 1204.5pt x 1405.25pt>
-File: ../imag/solucion_poisson_atomic.png Graphic file (type png)
-<use ../imag/solucion_poisson_atomic.png>
-Package pdftex.def Info: ../imag/solucion_poisson_atomic.png  used on input lin
-e 717.
+[20]
+<../../imag/solucion_poisson_atomic.png, id=302, 1204.5pt x 1405.25pt>
+File: ../../imag/solucion_poisson_atomic.png Graphic file (type png)
+<use ../../imag/solucion_poisson_atomic.png>
+Package pdftex.def Info: ../../imag/solucion_poisson_atomic.png  used on input 
+line 776.
 (pdftex.def)             Requested size: 295.90588pt x 345.222pt.
 
 
-[18 <../imag/solucion_poisson_atomic.png>]
-<../imag/validacion_stats.png, id=297, 1204.5pt x 1204.5pt>
-File: ../imag/validacion_stats.png Graphic file (type png)
-<use ../imag/validacion_stats.png>
-Package pdftex.def Info: ../imag/validacion_stats.png  used on input line 730.
+[21 <../../imag/solucion_poisson_atomic.png>]
+<../../imag/validacion_stats.png, id=311, 1204.5pt x 1204.5pt>
+File: ../../imag/validacion_stats.png Graphic file (type png)
+<use ../../imag/validacion_stats.png>
+Package pdftex.def Info: ../../imag/validacion_stats.png  used on input line 78
+9.
 (pdftex.def)             Requested size: 341.43307pt x 341.42978pt.
 
 
-[19 <../imag/validacion_stats.png>]
+[22 <../../imag/validacion_stats.png>]
 
-[20] (./report.aux
+[23] (./report.aux
 LaTeX Info: Redefining \. on input line 11.
 LaTeX Info: Redefining \% on input line 11.
 )
@@ -1116,19 +1154,19 @@ L3 programming layer <2025-01-18>
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
 
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
+LaTeX Warning: There were multiply-defined labels.
 
 Package rerunfilecheck Info: File `report.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
  ) 
 Here is how much of TeX's memory you used:
- 14006 strings out of 473197
- 213037 string characters out of 5718606
- 1089832 words of memory out of 5000000
- 36874 multiletter control sequences out of 15000+600000
+ 14022 strings out of 473197
+ 213791 string characters out of 5718606
+ 1082621 words of memory out of 5000000
+ 36888 multiletter control sequences out of 15000+600000
  569584 words of font info for 74 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,13n,79p,674b,2036s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,13n,79p,674b,1300s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/shar
 e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbxti10.pfb></usr/share/te
@@ -1144,10 +1182,10 @@ b></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/shar
 e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb></usr/share/texl
 ive/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb>
-Output written on report.pdf (20 pages, 765646 bytes).
+Output written on report.pdf (23 pages, 867550 bytes).
 PDF statistics:
- 429 PDF objects out of 1000 (max. 8388607)
- 366 compressed objects within 4 object streams
- 221 named destinations out of 1000 (max. 500000)
- 26 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 443 PDF objects out of 1000 (max. 8388607)
+ 375 compressed objects within 4 object streams
+ 223 named destinations out of 1000 (max. 500000)
+ 36 words of extra memory for PDF output out of 10000 (max. 10000000)
 
