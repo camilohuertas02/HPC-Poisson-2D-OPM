@@ -1,58 +1,51 @@
-# Proyecto de Paralelización con OpenMP: Ecuación de Poisson en 2D
+# ⚡ Paralelización con OpenMP: Ecuación de Poisson en 2D
 
-Este repositorio contiene la implementación y el análisis de rendimiento de la solución numérica de la ecuación de Poisson 2D mediante diferencias finitas (método iterativo). El código base secuencial ha sido paralelizado utilizando múltiples directivas de OpenMP para evaluar su impacto en el tiempo de ejecución y la escalabilidad.
+![C++17](https://img.shields.io/badge/C%2B%2B-17-blue.svg?style=for-the-badge&logo=c%2B%2B)
+![OpenMP](https://img.shields.io/badge/OpenMP-Enabled-red.svg?style=for-the-badge)
+![Gnuplot](https://img.shields.io/badge/Gnuplot-Data_Viz-orange.svg?style=for-the-badge)
+![Make](https://img.shields.io/badge/Make-Automation-green.svg?style=for-the-badge)
 
-## Autores
-* Camilo Huertas
-* Sebastián Rodríguez
-* Universidad Distrital Francisco José de Caldas - Programa académico de Física
+Este repositorio contiene la implementación en C++ y el análisis riguroso de rendimiento de la solución numérica de la **Ecuación de Poisson 2D** mediante el método iterativo de diferencias finitas. 
 
-## Requisitos del Sistema
-Para compilar, ejecutar y visualizar los resultados de este proyecto, necesitas tener instalados:
-* Compilador C++ (ej. g++) con soporte para OpenMP.
-* Make (para la orquestación de tareas).
-* Gnuplot (para la generación automática de gráficas).
+El código base secuencial ha sido paralelizado utilizando múltiples directivas de **OpenMP** (`parallel for`, `collapse`, `sections`, `schedule`, `atomic`, `critical`, `task`) para evaluar empíricamente su impacto en el tiempo de ejecución, la contención de memoria y los límites de escalabilidad fuerte regidos por la Ley de Amdahl.
 
-## Estructura del Proyecto
-* src/: Códigos fuente en C++ (poisson_serial.cpp, poisson_parallel_for.cpp, etc.).
-* bin/: Carpeta donde se guardan los binarios compilados automáticamente.
-* data/: Archivos .dat con las matrices de resultados y registros de tiempos generados por las simulaciones.
-* imag/: Gráficas .png generadas automáticamente por Gnuplot.
-* Makefile: Archivo de automatización para compilar, ejecutar y graficar.
-* plot_generico.gp: Script de Gnuplot para validación física (sábanas 3D y error absoluto).
-* plot_escalabilidad.gp: Script de Gnuplot para el análisis de rendimiento (tiempo vs. número de hilos).
+---
 
-## Instrucciones de Uso
+## 🖥️ Contexto de Hardware (HPC)
+El rendimiento en la computación paralela es relativo a la arquitectura subyacente. Las pruebas de escalabilidad y los perfiles de rendimiento (*Benchmarking*) de este proyecto están diseñados y evaluados para la siguiente topología:
+* **Procesador:** AMD Ryzen Threadripper 3990X.
+* **Núcleos Físicos / Lógicos:** 64 / 128 Threads.
+* **Dominio Paramétrico:** Mallas espaciales desde $64 \times 64$ hasta $1024 \times 1024$.
+* **Escalabilidad:** Pruebas de concurrencia con 4, 8, 16, 32 y 64 hilos.
 
-Todo el flujo de trabajo está automatizado a través del Makefile. Abre tu terminal en la raíz del proyecto y utiliza los siguientes comandos:
+---
 
-### 1. Compilación
-Ejecuta el siguiente comando para compilar todos los archivos fuente dentro de la carpeta src/ y generar los ejecutables en bin/:
+## ⚙️ Requisitos del Sistema
+Para compilar, ejecutar y renderizar los resultados numéricos de este proyecto, el entorno debe contar con:
+1. **Compilador C++:** `g++` (Con soporte para el estándar C++17 y la bandera `-fopenmp`).
+2. **Orquestación:** `make` (GNU Make para el pipeline de integración).
+3. **Visualización Científica:** `gnuplot` (Para renderizado de superficies 3D y curvas de rendimiento).
 
-    make all
+---
 
-### 2. Ejecución Simple (Prueba)
-Ejecuta una prueba rápida de todos los programas con una malla de 50x50 usando 16 hilos:
+## 📂 Estructura del Proyecto
 
-    make run
-
-### 3. Ejecución del Experimento de Escalabilidad (HPC)
-Realiza un barrido paramétrico riguroso evaluando distintas directivas de OpenMP. Varía el tamaño de la malla (50, 100, 200) y el número de hilos lógicos (1 a 80). Guarda los resultados limpios en data/tiempos_experiment.dat:
-
-    make run_experiment
-
-### 4. Generación de Gráficas
-Una vez finalizadas las ejecuciones, puedes generar las gráficas con:
-
-    make plot_fisica
-    make plot_hpc
-    make plot_all
-
-* make plot_fisica: Genera las sábanas 3D teóricas vs. numéricas.
-* make plot_hpc: Genera las curvas de escalabilidad y rendimiento.
-* make plot_all: Ejecuta ambas visualizaciones al tiempo. Todas las imágenes resultantes se guardarán en la carpeta imag/.
-
-### 5. Limpieza del Entorno
-Elimina los binarios compilados y los datos generados para dejar el directorio limpio:
-
-    make clean
+```text
+Taller_OpenMP_Poisson/
+├── Makefile                # Pipeline automatizado de Integración Continua
+├── README.md               # Documentación principal
+├── actividades/            # Reporte formal en formato LaTeX (.tex y .pdf)
+├── bin/                    # [Autogenerado] Ejecutables binarios
+├── data/                   # [Autogenerado] Matrices de resultados y logs (.dat)
+├── imag/                   # [Autogenerado] Gráficas de rendimiento y sábanas 3D (.png)
+├── tools/                  # Herramientas de post-procesamiento estadístico
+└── src/                    # Códigos fuente C++
+    ├── poisson_serial.cpp
+    ├── poisson_parallel_for-act1.cpp
+    ├── poisson_collapse-act2.cpp
+    ├── poisson_sections-act3.cpp
+    ├── poisson_schedule.cpp
+    ├── poisson_sync.cpp
+    ├── poisson_critical-act6.cpp
+    ├── poisson_atomic-act6.cpp
+    └── poisson_task-act7.cpp
