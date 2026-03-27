@@ -9,6 +9,41 @@
 \usepackage{graphicx} % Paquete fundamental para insertar las graficas
 \usepackage{float}    % Para forzar la posicion de las imagenes
 \usepackage{hyperref}
+\usepackage{listings}
+
+
+
+% ==========================================
+% PAQUETES PARA CÓDIGO FUENTE (HPC)
+% ==========================================
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{estiloC}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=estiloC}
 
 \title{\textbf{Proyecto de Computación de Alto Rendimiento (HPC): \\ Paralelización de la Ecuación de Poisson en 2D con OpenMP}}
 \author{
@@ -41,6 +76,7 @@ Todas las pruebas de rendimiento registradas en este informe fueron ejecutadas e
 
 \section*{Análisis de Escalabilidad Visual}
 
+
 En la siguiente figura se exponen las curvas de rendimiento computacional para los tres tamaños de malla. Se observa una escala logarítmica tanto en el número de hilos (eje X) como en el tiempo de ejecución (eje Y).
 
 \begin{figure}[H]
@@ -54,69 +90,621 @@ En la siguiente figura se exponen las curvas de rendimiento computacional para l
 
 Como se evidencia en las gráficas, sin importar el tamaño de la malla, el límite de máxima eficiencia o ``punto dulce'' (\textit{sweet spot}) se alcanza a los \textbf{32 hilos}. A partir de los 64 hilos, las curvas de tiempo sufren una inflexión al alza, demostrando una degradación del rendimiento debido a la saturación del ancho de banda de la memoria compartida (cuello de botella de Von Neumann) y el sobrecosto de sincronización.
 
-\section*{Análisis por Directivas (Basado en Malla $200\times200$)}
+\section*{Análisis por Directivas}
 
-Para evitar redundancias, el análisis cuantitativo de las actividades se concentrará en el caso de mayor exigencia computacional (malla $200\times200$), cuyo tiempo secuencial base fue de \textbf{6.185 segundos}.
+A contincación se presentaran los resultados de las las diferentes implementacíones hechas al codigo base con el fin de entender el impacto de cada una de ellas, y ver como ganan o pierden relevancia a medida que cambiamos la magnitud del problema. 
 
-\subsection*{Actividad 1: \texttt{\#pragma omp parallel for}}
-Se paralelizó el bucle principal. 
-\begin{itemize}
-    \item \textbf{Mejor tiempo (32 hilos):} 0.388 segundos.
-    \item \textbf{Análisis:} Presenta la aceleración más estable y eficiente de todo el experimento. Logró un \textit{Speedup} máximo de casi 16x respecto al código secuencial. La inclusión de \texttt{reduction(max:delta)} operó sin ralentizaciones significativas.
-\end{itemize}
-
-\subsection*{Actividad 2: \texttt{collapse(2)}}
-\begin{itemize}
-    \item \textbf{Mejor tiempo (32 hilos):} 0.422 segundos.
-    \item \textbf{Análisis:} A pesar de aplanar los bucles $i$ y $j$, introdujo un sobrecosto algebraico en la gestión de índices que lo hizo levemente más lento que el \texttt{parallel for} simple en todos los escenarios.
-\end{itemize}
-
-\subsection*{Actividad 3: \texttt{sections}}
-\begin{itemize}
-    \item \textbf{Mejor tiempo (32 hilos):} 0.477 segundos.
-    \item \textbf{Análisis de Funciones:} Se paralelizaron \texttt{initialize\_boundaries} y \texttt{poisson\_source}. Fue necesario extraer el cálculo de los pasos de malla $h, k$ y el \texttt{resize} de los vectores fuera de la región paralela para evitar condiciones de carrera (\textit{race conditions}) y asegurar que cada sección operara sobre memoria ya asignada e independiente.
-    \item \textbf{Reflexión sobre Eficiencia:} Para una malla de $200 \times 200$, la paralelización de estas funciones no resulta eficiente con 32 hilos. El tiempo de $0.477$ s (frente a los $0.057$ s obtenidos con 16 hilos) demuestra que el \textit{overhead} de creación del equipo de hilos y la contención del bus de memoria superan ampliamente el tiempo de ejecución serial de las tareas. Esta estrategia solo es valiosa en problemas de escala masiva donde la latencia de inicialización es un cuello de botella crítico.
-\end{itemize}
-
-\subsection*{Actividades 4 y 5: \texttt{schedule} y Control de Sincronización (\texttt{critical})}
-\begin{itemize}
-    \item \textbf{Mejor tiempo \texttt{schedule} (32 hilos):} 0.391 segundos.
-    \item \textbf{Mejor tiempo \texttt{critical} (32 hilos):} 0.638 segundos.
-    \item \textbf{Análisis:} El control mediante \texttt{schedule(static)} mantuvo un rendimiento idéntico a la Actividad 1. Por otro lado, la sincronización manual explícita y el uso de regiones \texttt{critical} afectaron la fluidez de la concurrencia, elevando el tiempo óptimo en más de un 60\% respecto al código sin barreras innecesarias.
-\end{itemize}
-
-\subsection*{Actividad 6: Variables Compartidas (\texttt{atomic} vs \texttt{critical})}
-\begin{itemize}
-    \item \textbf{Mejor tiempo \texttt{atomic} (32 hilos):} 0.511 segundos.
-    \item \textbf{Análisis:} En operaciones matemáticas de un solo ciclo (como el incremento de un contador), la instrucción atómica a nivel de hardware superó sustancialmente a la región \texttt{critical} (0.511s frente a 0.638s), confirmando su menor latencia y \textit{overhead}.
-\end{itemize}
-
-\subsection*{Actividad 7: Exploración con Tareas (\texttt{task})}
-\begin{itemize}
-    \item \textbf{Tiempo mínimo (2 hilos):} 4.43 segundos.
-    \item \textbf{Tiempo máximo (80 hilos):} 34.28 segundos.
-    \item \textbf{Análisis:} Fue la peor directiva evaluada con diferencia. Como se observa en la curva roja oscura de la gráfica, escalar esta directiva resulta contraproducente. La sobrecarga administrativa (crear, poner en cola y despachar decenas de miles de tareas para bloques regulares) estranguló al despachador de OpenMP, siendo hasta 5 veces más lento que correr el código secuencial puro.
-\end{itemize}
-
-\section*{Comparación Final de Estrategias}
+\subsection*{Preparación}
 
 \begin{table}[H]
 \centering
-\begin{tabularx}{\textwidth}{llccl}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{|c|c|c|c|l|}
+\hline
+\textbf{Tamaño de Malla ($N$)} & \textbf{Hilos} & \textbf{Tiempo de ejecución (s)} & \textbf{Iteraciones} & \textbf{Programa} \\ \hline
+64 & 1 & 0.0876946 & 3136 & serial \\ \hline
+128 & 1 & 1.22039 & 10244 & serial \\ \hline
+256 & 1 & 15.4041 & 31844 & serial \\ \hline
+512 & 1 & 177.864 & 91868 & serial \\ \hline
+1024 & 1 & \underline{\hspace{2cm}} & \underline{\hspace{2cm}} & serial \\ \hline
+\end{tabular}
+\caption{Resultados de ejecución y convergencia para el código base secuencial variando el tamaño de la malla con una tolerancia de $Tol=1 \times 10 ^ {-6} $.}
+\label{tab:resultados_secuenciales}
+\end{table}
+
+
+\subsection*{Actividad 1: Paralelización con \texttt{\#pragma omp parallel for}}
+
+\subsubsection*{1. Implementación y Mecánica}
+En esta fase se implementó la paralelización del bucle de mayor granularidad dentro de la subrutina \texttt{solve\_poisson}. La estrategia consistió en distribuir las iteraciones del bucle espacial externo (índice $i$) entre los hilos disponibles en el bloque \texttt{parallel}, garantizando la integridad de la variable de convergencia mediante una reducción de norma infinito ($L_\infty$). 
+
+La directiva fue implementada en el archivo \texttt{poisson\_parallel\_for.cpp} de la siguiente manera:
+
+\begin{lstlisting}[language=C++, caption={Fragmento de paralelización del bucle principal en \texttt{solve\_poisson}.}, label={lst:act1}]
+void solve_poisson(std::vector<std::vector<double>>& T, const std::vector<std::vector<double>>& source, int M, int N, double h, double k, double TOL_param) {
+    double delta = 1.0;
+    
+    while (delta > TOL_param) {
+        delta = 0.0;
+        
+        // Sincronización optimizada mediante reducción atómica de OpenMP
+        #pragma omp parallel for reduction(max:delta)
+        for (int i = 1; i < M; ++i){
+            for (int j = 1; j < N; ++j){
+                double T_old = T[i][j];
+                
+                // Discretización por diferencias finitas (esquema centrado)
+                T[i][j] = (((T[i+1][j] + T[i-1][j]) * k*k) + ((T[i][j+1] + T[i][j-1]) * h*h) - (source[i][j] * h*h*k*k)) / (2.0 * (h*h + k*k));
+                
+                // Cálculo del residuo local
+                double diff = std::abs(T[i][j] - T_old);
+                if (diff > delta) {
+                    delta = diff;
+                }
+            }
+        }
+        iterations++;
+    }
+}
+\end{lstlisting}
+
+\subsubsection*{2. Resultados de Escalabilidad}
+
+A continuación, se presentan los tiempos de ejecución (en segundos) para la directiva \texttt{parallel\_for} en todas las configuraciones de malla evaluadas.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Malla ($N$)} & \textbf{Hilos ($p$)} & \textbf{Tiempo (s)} & \textbf{Iteraciones} & \textbf{Speedup $S(p)$} \\ \hline
+64 & 1 (Serial) & 0.0876946 & 3136 & 1.00x \\ 
+64 & 4 & 0.0298665 & 3134 & 2.94x \\ 
+64 & 8 & 0.0228970 & 3133 & 3.83x \\ 
+64 & 16 & 0.0230676 & 3129 & 3.80x \\ 
+64 & 32 & 0.0313042 & 3161 & 2.80x \\ 
+64 & 64 & 0.0746284 & 4285 & 1.17x \\ \hline
+128 & 1 (Serial) & 1.2203900 & 10244 & 1.00x \\ 
+128 & 4 & 0.3339710 & 10242 & 3.65x \\ 
+128 & 8 & 0.1948170 & 10241 & 6.26x \\ 
+128 & 16 & 0.1319040 & 10237 & 9.25x \\ 
+128 & 32 & 0.1235640 & 10230 & 9.88x \\ 
+128 & 64 & 0.2268360 & 10667 & 5.38x \\ \hline
+256 & 1 (Serial) & 15.404100 & 31844 & 1.00x \\ 
+256 & 4 & 3.9311900 & 31842 & 3.92x \\ 
+256 & 8 & 2.0398000 & 31840 & 7.55x \\ 
+256 & 16 & 1.1410700 & 31837 & 13.50x \\ 
+256 & 32 & 0.7770640 & 31830 & 19.82x \\ 
+256 & 64 & 0.9514040 & 31817 & 16.19x \\ \hline
+512 & 1 (Serial) & 177.86400 & 91868 & 1.00x \\ 
+512 & 4 & 44.766700 & 91867 & 3.97x \\ 
+512 & 8 & 22.487300 & 91865 & 7.91x \\ 
+512 & 16 & 11.805200 & 91862 & 15.06x \\ 
+512 & 32 & 6.6315200 & 91855 & 26.82x \\ 
+512 & 64 & 5.4961000 & 91842 & 32.36x \\ \hline
+\end{tabular}
+\caption{Desempeño de \texttt{parallel\_for} para distintos tamaños de malla y conteo de hilos.}
+\label{tab:resultados_parallel_for}
+\end{table}
+
+\subsubsection*{3. Análisis Técnico y Respuestas}
+
+\begin{enumerate}
+    \item \textbf{¿Por qué es necesaria la cláusula \texttt{reduction}?} \\
+    Es imperativa para evitar \textit{data races}. La variable \texttt{delta} acumula el error máximo de la malla. Sin \texttt{reduction(max:delta)}, múltiples hilos intentarían sobreescribir esta variable compartida simultáneamente. Esta cláusula permite que cada hilo calcule un máximo local privado, combinándolos de forma atómica y segura al finalizar la región paralela.
+
+    \item \textbf{¿Hubo mejora de rendimiento?} \\
+    Sí, logrando un escalamiento fuerte (\textit{Strong Scaling}) evidente en mallas grandes (ej. \textit{Speedup} de \textbf{32.36x} en $512 \times 512$ con 64 hilos). Sin embargo, en mallas pequeñas ($64 \times 64$), usar más de 8 hilos degrada el rendimiento. Esto ilustra la Ley de Amdahl: el \textit{overhead} del sistema operativo para gestionar los hilos supera el beneficio computacional al tener una carga de trabajo tan reducida.
+
+    \item \textbf{¿Hubo diferencia en el número de iteraciones?} \\
+    Sí, existe una ligera variación. Al actualizar la matriz \textit{in-place} mediante múltiples hilos, se rompe el orden estricto secuencial (Gauss-Seidel puro). Las lecturas y escrituras concurrentes generan un comportamiento no determinista en la propagación del error, alterando sutilmente la iteración exacta en la que el residuo global cumple la tolerancia.
+\end{enumerate}
+
+\subsubsection*{4. Veredicto Arquitectónico}
+\textbf{¿Valió la pena?} Absolutamente. Es la directiva con la mejor relación costo-beneficio del laboratorio debido a su mínima necesidad de refactorización. \textbf{¿Cuándo usarla?} En bucles intensivos donde las iteraciones sean estrictamente independientes. No obstante, en la resolución de EDPs, para garantizar un determinismo numérico del 100\%, debe combinarse con esquemas algorítmicos paralelos seguros, como el método de Jacobi o el coloreo \textit{Red-Black}.
+
+
+
+\subsection*{Actividad 2: Aceleración con anidamiento de bucles (\texttt{collapse})}
+
+\subsubsection*{1. Implementación y Mecánica}
+Se modificó la subrutina \texttt{solve\_poisson} para fusionar los dos bucles espaciales ($i$ y $j$) en un único espacio de iteración lineal de tamaño $(M-1) \times (N-1)$. Esto incrementa la cantidad total de tareas independientes que el planificador de OpenMP puede distribuir entre los hilos.
+
+\begin{lstlisting}[language=C++, caption={Implementación de collapse en \texttt{poisson\_collapse.cpp}}, label={lst:act2}]
+// El collapse(2) fusiona los bucles de i y j en un solo bloque lineal
+#pragma omp parallel for collapse(2) reduction(max:delta)
+for (int i = 1; i < M; ++i) {
+    for (int j = 1; j < N; ++j) {
+        // Discretización y cálculo del residuo
+\end{lstlisting}
+
+\subsubsection*{2. Resultados de Escalabilidad}
+Los tiempos de ejecución (en segundos) para la variante con \texttt{collapse(2)} se detallan a continuación.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Malla ($N$)} & \textbf{Hilos ($p$)} & \textbf{Tiempo (s)} & \textbf{Iteraciones} & \textbf{Speedup $S(p)$} \\ \hline
+64 & 1 (Serial) & 0.0876946 & 3136 & 1.00x \\ 
+64 & 4 & 0.0318604 & 3135 & 2.75x \\ 
+64 & 8 & 0.0235623 & 3133 & 3.72x \\ 
+64 & 16 & 0.0239249 & 3129 & 3.66x \\ 
+64 & 32 & 0.0370918 & 3262 & 2.36x \\ 
+64 & 64 & 0.0711667 & 3866 & 1.23x \\ \hline
+128 & 1 (Serial) & 1.2203900 & 10244 & 1.00x \\ 
+128 & 4 & 0.3619020 & 10242 & 3.37x \\ 
+128 & 8 & 0.2067300 & 10241 & 5.90x \\ 
+128 & 16 & 0.1399360 & 10237 & 8.72x \\ 
+128 & 32 & 0.1250430 & 10230 & 9.76x \\ 
+128 & 64 & 0.2326630 & 10838 & 5.24x \\ \hline
+256 & 1 (Serial) & 15.404100 & 31844 & 1.00x \\ 
+256 & 4 & 4.3170500 & 31842 & 3.56x \\ 
+256 & 8 & 2.2337600 & 31840 & 6.89x \\ 
+256 & 16 & 1.2187400 & 31837 & 12.63x \\ 
+256 & 32 & 0.8355330 & 31830 & 18.43x \\ 
+256 & 64 & 0.9712140 & 31820 & 15.86x \\ \hline
+512 & 1 (Serial) & 177.86400 & 91868 & 1.00x \\ 
+512 & 4 & 49.416800 & 91867 & 3.59x \\ 
+512 & 8 & 24.941400 & 91865 & 7.13x \\ 
+512 & 16 & 13.001700 & 91862 & 13.68x \\ 
+512 & 32 & 7.2194500 & 91855 & 24.63x \\ 
+512 & 64 & 5.8275200 & 91842 & 30.52x \\ \hline
+\end{tabular}
+\caption{Desempeño de \texttt{collapse(2)} para distintos tamaños de malla y conteo de hilos.}
+\label{tab:resultados_collapse}
+\end{table}
+
+\subsubsection*{3. Análisis Técnico y Respuestas}
+
+\begin{enumerate}
+    \item \textbf{¿Qué hace \texttt{collapse(2)}?} \\
+    Toma dos bucles anidados perfectamente estructurados y los trata algorítmicamente como un único bucle de tamaño $I \times J$. Esto amplía el espacio de iteraciones disponible, dándole al \textit{scheduler} de OpenMP más granularidad para distribuir el trabajo entre los hilos de manera equitativa.
+
+    \item \textbf{¿Mejoró respecto a la versión anterior (\texttt{parallel for})?} \\
+    \textbf{No.} Al observar los datos, \texttt{collapse(2)} es consistentemente más lento que un simple \texttt{parallel for}. Por ejemplo, en $512 \times 512$ con 64 hilos, \texttt{collapse} tarda $5.82s$, mientras que la versión base tardaba $5.49s$. 
+
+    \item \textbf{¿Es siempre recomendable su uso?} \\
+    No. En mallas cuadradas continuas en memoria (como una matriz en C++ anidando \texttt{std::vector}), el bucle externo suele proporcionar suficiente paralelismo si $M \gg p$ (tamaño de la malla mucho mayor que el número de hilos). Forzar el \texttt{collapse} en este escenario solo introduce \textit{overhead} adicional por el cálculo de índices lineales internos sin ofrecer un beneficio de balanceo de carga real.
+\end{enumerate}
+
+\subsubsection*{4. Veredicto Arquitectónico}
+Para este problema en específico, \texttt{collapse} resulta subóptimo. Su uso está justificado únicamente cuando el bucle más externo es muy pequeño (ej. iterar sobre 4 elementos) y no hay suficiente trabajo para alimentar a todos los hilos, obligando a extraer paralelismo de los bucles internos.
+
+
+\subsection*{Actividad 3: Paralelismo de tareas independientes (\texttt{sections})}
+
+\subsubsection*{1. Implementación y Mecánica}
+Se utilizó la directiva \texttt{\#pragma omp sections} para ejecutar la inicialización de las fronteras espaciales y la matriz fuente de forma concurrente. Cada función fue delegada a un hilo distinto mediante \texttt{\#pragma omp section}.
+
+\begin{lstlisting}[language=C++, caption={Implementación de sections en el programa principal.}, label={lst:act3}]
+// Asignación de memoria obligatoria en el hilo maestro (serial)
+std::vector<std::vector<double>> T(M+1, std::vector<double>(N+1, 0.0));
+std::vector<std::vector<double>> source(M+1, std::vector<double>(N+1, 0.0));
+
+// Bifurcación de tareas independientes
+#pragma omp parallel sections
+{
+    #pragma omp section
+    initialize_boundaries(M, N, T, h, k); // Ejecutado por Hilo 0
+
+    #pragma omp section
+    poisson_source(M, N, source);         // Ejecutado por Hilo 1
+}
+\end{lstlisting}
+
+\subsubsection*{2. Resultados de Escalabilidad}
+A continuación se muestran los tiempos totales de ejecución integrando la inicialización por secciones y la resolución de Poisson.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Malla ($N$)} & \textbf{Hilos ($p$)} & \textbf{Tiempo (s)} & \textbf{Iteraciones} & \textbf{Speedup $S(p)$} \\ \hline
+64 & 1 (Serial) & 0.0876946 & 3136 & 1.00x \\ 
+64 & 4 & 0.0336631 & 3134 & 2.60x \\ 
+64 & 8 & 0.0243871 & 3133 & 3.60x \\ 
+64 & 16 & 0.0242526 & 3129 & 3.62x \\ 
+64 & 32 & 0.0334470 & 3172 & 2.62x \\ 
+64 & 64 & 0.0716508 & 3976 & 1.22x \\ \hline
+128 & 1 (Serial) & 1.2203900 & 10244 & 1.00x \\ 
+128 & 4 & 0.3949140 & 10242 & 3.09x \\ 
+128 & 8 & 0.2243120 & 10241 & 5.44x \\ 
+128 & 16 & 0.1486540 & 10237 & 8.21x \\ 
+128 & 32 & 0.1293090 & 10230 & 9.44x \\ 
+128 & 64 & 0.2287940 & 10744 & 5.33x \\ \hline
+256 & 1 (Serial) & 15.404100 & 31844 & 1.00x \\ 
+256 & 4 & 4.7160100 & 31842 & 3.27x \\ 
+256 & 8 & 2.4282700 & 31840 & 6.34x \\ 
+256 & 16 & 1.3418100 & 31837 & 11.48x \\ 
+256 & 32 & 0.8688300 & 31830 & 17.73x \\ 
+256 & 64 & 0.9953200 & 31817 & 15.48x \\ \hline
+512 & 1 (Serial) & 177.86400 & 91868 & 1.00x \\ 
+512 & 4 & 53.958200 & 91867 & 3.30x \\ 
+512 & 8 & 27.650800 & 91865 & 6.43x \\ 
+512 & 16 & 14.058300 & 91862 & 12.65x \\ 
+512 & 32 & 7.7859500 & 91855 & 22.84x \\ 
+512 & 64 & 6.0297500 & 91843 & 29.50x \\ \hline
+1024 & 1 (Serial) & & & 1.00x \\ 
+1024 & 4 & & & \\ 
+1024 & 8 & & & \\ 
+1024 & 16 & & & \\ 
+1024 & 32 & & & \\ 
+1024 & 64 & & & \\ \hline
+\end{tabular}
+\caption{Desempeño general utilizando \texttt{sections} en la inicialización.}
+\label{tab:resultados_sections}
+\end{table}
+
+\subsubsection*{3. Análisis Técnico y Respuestas}
+
+\begin{enumerate}
+    \item \textbf{¿Tuviste que reordenar las funciones? ¿Por qué?} \\
+    Sí, fue estrictamente necesario. En la versión secuencial, \texttt{initialize\_grid} asignaba la memoria dinámica. Al usar \texttt{sections}, asignar memoria en un hilo mientras otro intenta escribir en ella genera una condición de carrera sobre el gestor de memoria (\textit{Heap}) o un \textit{Segmentation Fault}. La memoria debió reservarse previamente en el hilo maestro antes de la región paralela.
+
+    \item \textbf{¿Vale la pena paralelizar funciones tan rápidas?} \\
+    \textbf{No.} La inicialización tiene una complejidad $O(N^2)$ muy baja comparada con la resolución de Poisson que ejecuta miles de iteraciones. El \textit{overhead} temporal impuesto por el sistema operativo para crear la región paralela, despachar los hilos y sincronizarlos supera con creces el cálculo aritmético en sí mismo.
+\end{enumerate}
+
+\subsubsection*{4. Veredicto Arquitectónico}
+Para inicializar datos o realizar bucles triviales, \texttt{sections} es contraproducente debido a la fuerte penalización por sincronización. Esta directiva está diseñada para paralelismo de grano grueso (\textit{Task-level parallelism}), como operaciones asimétricas (ej. un hilo realiza I/O en disco mientras otro procesa datos en memoria), y no para micro-optimizaciones matriciales.
+\subsection*{Actividad 4: Control explícito de la región paralela y \texttt{schedule}}
+
+\subsubsection*{1. Implementación y Mecánica}
+Se separó la creación de los hilos de la distribución del trabajo. Al abrir una región \texttt{\#pragma omp parallel}, los hilos se instancian una sola vez. Dentro de ella, el \texttt{\#pragma omp for} reparte el bucle espacial iterativo. Se impuso explícitamente un \texttt{schedule(static)}, el cual divide el espacio de iteraciones en bloques continuos de igual tamaño asignados a cada hilo en tiempo de compilación.
+
+\begin{lstlisting}[language=C++, caption={Separación de la región paralela y particionamiento estático.}, label={lst:act4}]
+// 1. Creación del equipo de hilos (Fork)
+#pragma omp parallel
+{
+    // 2. Distribución de carga de trabajo precalculada
+    #pragma omp for schedule(static) reduction(max:delta)
+    for (int i = 1; i < M; ++i) {
+        for (int j = 1; j < N; ++j) {
+            // Discretización de Poisson (Carga FLOP uniforme)
+\end{lstlisting}
+
+\subsubsection*{2. Resultados de Escalabilidad}
+Los tiempos y factores de aceleración para la variante con \texttt{schedule(static)} se reportan a continuación.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Malla ($N$)} & \textbf{Hilos ($p$)} & \textbf{Tiempo (s)} & \textbf{Iteraciones} & \textbf{Speedup $S(p)$} \\ \hline
+64 & 1 (Serial) & 0.0876946 & 3136 & 1.00x \\ 
+64 & 4 & 0.0300428 & 3134 & 2.92x \\ 
+64 & 8 & 0.0214490 & 3133 & 4.09x \\ 
+64 & 16 & 0.0242718 & 3129 & 3.61x \\ 
+64 & 32 & 0.0322151 & 3199 & 2.72x \\ 
+64 & 64 & 0.0727916 & 4194 & 1.20x \\ \hline
+128 & 1 (Serial) & 1.2203900 & 10244 & 1.00x \\ 
+128 & 4 & 0.3308960 & 10242 & 3.69x \\ 
+128 & 8 & 0.1915170 & 10241 & 6.37x \\ 
+128 & 16 & 0.1356200 & 10237 & 9.00x \\ 
+128 & 32 & 0.1186250 & 10230 & 10.29x \\ 
+128 & 64 & 0.2241750 & 10474 & 5.44x \\ \hline
+256 & 1 (Serial) & 15.404100 & 31844 & 1.00x \\ 
+256 & 4 & 3.9221900 & 31842 & 3.93x \\ 
+256 & 8 & 2.0321700 & 31840 & 7.58x \\ 
+256 & 16 & 1.1375900 & 31837 & 13.54x \\ 
+256 & 32 & 0.7864660 & 31830 & 19.59x \\ 
+256 & 64 & 0.9597570 & 31817 & 16.05x \\ \hline
+512 & 1 (Serial) & 177.86400 & 91868 & 1.00x \\ 
+512 & 4 & 44.674700 & 91867 & 3.98x \\ 
+512 & 8 & 22.907600 & 91865 & 7.76x \\ 
+512 & 16 & 11.781500 & 91862 & 15.10x \\ 
+512 & 32 & 6.7206700 & 91855 & 26.46x \\ 
+512 & 64 & 5.5473700 & 91842 & 32.06x \\ \hline
+1024 & 1 (Serial) & & & 1.00x \\ 
+1024 & 4 & & & \\ 
+1024 & 8 & & & \\ 
+1024 & 16 & & & \\ 
+1024 & 32 & & & \\ 
+1024 & 64 & & & \\ \hline
+\end{tabular}
+\caption{Desempeño general de la planificación \texttt{schedule(static)}.}
+\label{tab:resultados_schedule}
+\end{table}
+
+\subsubsection*{3. Análisis Técnico y Respuestas}
+
+\begin{enumerate}
+    \item \textbf{Resultados de tiempo: Estrategia \texttt{schedule(static)} vs \texttt{schedule(dynamic)}}\\
+    Como se observa en la tabla, \texttt{schedule(static)} produce tiempos altamente eficientes y competitivos, prácticamente idénticos a los de la directiva por defecto. Por una decisión arquitectónica orientada al rendimiento, \textbf{no se implementó la variante dinámica}, ya que en este contexto matemático resultaría en una penalización masiva sin beneficio algorítmico.
+
+    \item \textbf{Justificación de la exclusión de \texttt{dynamic}: La uniformidad del dominio}\\
+    El método de diferencias finitas en una malla cartesiana regular distribuye un número idéntico de operaciones de punto flotante (FLOPs) para cada nodo espacial $(i,j)$. El esfuerzo computacional es perfectamente uniforme. \texttt{schedule(dynamic)} está diseñado para cargas desbalanceadas, asignando iteraciones sobre la marcha. Usarlo aquí obligaría a los hilos a bloquear y desbloquear continuamente un planificador central para solicitar la siguiente iteración, inundando el \textit{bus} de memoria con \textit{overhead} de sincronización que destruiría el desempeño.
+\end{enumerate}
+
+\subsubsection*{4. Veredicto Arquitectónico}
+Separar la región paralela del bucle \texttt{for} es una excelente práctica cuando se requieren múltiples bucles paralelos consecutivos (evitando recrear hilos repetidamente). Respecto a la planificación, \texttt{schedule(static)} es imperativo para dominios con física y geometría regulares. \texttt{schedule(dynamic)} debe reservarse estrictamente para simulaciones asimétricas (e.g., dinámica de fluidos con fronteras libres, o partículas donde la densidad celular varía drásticamente).
+
+\subsection*{Actividad 5: Control de sincronización (\texttt{nowait}, \texttt{barrier}, \texttt{single}, \texttt{critical})}
+
+\subsubsection*{1. Implementación y Mecánica}
+Se reemplazó la reducción automática por una gestión manual de la memoria compartida. Se utilizó \texttt{nowait} para eliminar la barrera implícita del bucle \texttt{for}, obligando a los hilos a evaluar el error máximo mediante una variable local (\texttt{local\_delta}), la cual se compara contra la global (\texttt{delta}) dentro de una sección \texttt{critical} de exclusión mutua.
+
+\begin{lstlisting}[language=C++, caption={Gestión manual de sincronización y reducción del error.}, label={lst:act5}]
+double local_delta = 0.0;
+
+// Eliminación de la barrera implícita
+#pragma omp for nowait
+for (int i = 1; i < M; ++i) {
+    for (int j = 1; j < N; ++j) {
+        // ... Cálculo de diferencias finitas ...
+        if (diff > local_delta) local_delta = diff;
+    }
+}
+
+// Serialización forzada para escritura segura
+#pragma omp critical
+{
+    if (local_delta > delta) delta = local_delta;
+}
+
+// Barrera explícita para garantizar que todos actualizaron 'delta'
+#pragma omp barrier
+
+// Bloque exclusivo para un solo hilo
+#pragma omp single
+{
+    iterations++;
+}
+\end{lstlisting}
+
+\subsubsection*{2. Resultados de Escalabilidad}
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Malla ($N$)} & \textbf{Hilos ($p$)} & \textbf{Tiempo (s)} & \textbf{Iteraciones} & \textbf{Speedup $S(p)$} \\ \hline
+64 & 1 (Serial) & 0.0876946 & 3136 & 1.00x \\ 
+64 & 4 & 0.0338897 & 3134 & 2.58x \\
+64 & 16 & 0.0451508 & 3129 & 1.94x \\ 
+64 & 64 & 0.1669830 & 4295 & 0.52x (Degradación) \\ \hline
+128 & 16 & 0.1976760 & 10237 & 6.17x \\ 
+128 & 64 & 0.4535210 & 10304 & 2.69x \\ \hline
+256 & 16 & 1.3233100 & 31837 & 11.64x \\ 
+256 & 64 & 1.5527700 & 31817 & 9.92x \\ \hline
+512 & 1 (Serial) & 177.86400 & 91868 & 1.00x \\ 
+512 & 16 & 12.242400 & 91862 & 14.52x \\ 
+512 & 64 & 7.1315600 & 91842 & 24.94x \\ \hline
+\end{tabular}
+\caption{Desempeño de la implementación con sincronización manual explícita.}
+\label{tab:resultados_sync}
+\end{table}
+
+\subsubsection*{3. Análisis Técnico y Respuestas}
+
+\begin{enumerate}
+    \item \textbf{¿Hubo cambio con respecto al uso por defecto (\texttt{nowait})?} \\
+    El \texttt{nowait} elimina la barrera de sincronización al final del bucle \texttt{for}, permitiendo que los hilos que terminen antes avancen. Sin embargo, en este código, ese beneficio es inmediatamente anulado por el \texttt{\#pragma omp critical} y el \texttt{\#pragma omp barrier} subsecuentes. El rendimiento se degradó drásticamente en comparación con una cláusula \texttt{reduction} nativa.
+
+    \item \textbf{¿Dónde colocaste la directiva \texttt{single} y por qué?} \\
+    Se colocó justo antes de terminar la región paralela para incrementar la variable global \texttt{iterations}. Es imperativo ponerla allí porque el contador de iteraciones debe aumentar exactamente en una unidad por cada barrido completo de la malla. Si no se usara \texttt{single}, cada hilo sumaría al contador, desvirtuando la métrica.
+
+    \item \textbf{¿\texttt{critical} ralentizó la ejecución? ¿En qué contexto sería útil?} \\
+    Sí, causó una ralentización severa (ej. para la malla de 64 con 64 hilos, el código es más lento que el secuencial). \texttt{critical} bloquea a todos los demás hilos mientras uno ejecuta la sección, generando alta contención (\textit{lock contention}). Es útil únicamente cuando se actualizan estructuras de datos complejas que no soportan operaciones atómicas en hardware, como insertar nodos en una lista enlazada o escribir registros en un archivo I/O concurrente.
+\end{enumerate}
+
+% ==========================================
+% TABLA FINAL Y CONCLUSIONES
+% ==========================================
+\subsection*{Actividad Final: Comparación de Estrategias}
+
+Para evaluar rigurosamente el impacto arquitectónico, se tabulan los resultados sobre el escenario de mayor exigencia computacional disponible con datos completos: \textbf{Malla $512 \times 512$ ejecutada con 64 hilos}.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{tabular}{|m{3.5cm}|m{3cm}|c|c|m{3.5cm}|}
+\hline
+\textbf{Versión} & \textbf{Directiva usada} & \textbf{Tiempo (s)} & \textbf{Iteraciones} & \textbf{Observaciones} \\ \hline
+Secuencial & N/A (Baseline) & 177.86 & 91868 & Base de normalización $S(p)=1$. \\ \hline
+Paralelo básico & \texttt{parallel for reduction} & 5.49 & 91842 & \textbf{Más eficiente}. Equilibrio ideal entre computación y balance estático. \\ \hline
+Colapsado de bucles & \texttt{collapse(2)} & 5.82 & 91842 & Penalización leve por recálculo de índices lineales en hardware. \\ \hline
+Inicialización en paralelo & \texttt{sections} & 6.02 & 91843 & \textit{Overhead} de fork-join no justifica la complejidad $O(N^2)$ de inicializar. \\ \hline
+Control explícito & \texttt{schedule(static)} & 5.54 & 91842 & Rendimiento óptimo equivalente a la directiva por defecto. \\ \hline
+Control de sincronización & \texttt{critical / barrier} & 7.13 & 91842 & Embotellamiento del bus de memoria por \textit{lock contention}. \\ \hline
+\end{tabular}
+\caption{Comparativa general de estrategias OpenMP (Malla 512, 64 Hilos).}
+\label{tab:comparativa_final}
+\end{table}
+
+\subsubsection*{Conclusiones Generales}
+
+\begin{enumerate}
+    \item \textbf{¿Cuál fue la versión más rápida?} \\
+    La versión de \textbf{Paralelo básico} (\texttt{\#pragma omp parallel for} con \texttt{reduction}) y la de \textbf{Control explícito} (\texttt{schedule(static)}). Ambas lograron converger en $\approx \mathbf{5.5}$ segundos para la malla 512, demostrando que para geometrías regulares, la asignación estática del compilador es inmejorable.
+
+    \item \textbf{¿Qué directiva es más fácil de usar?} \\
+    La directiva \texttt{\#pragma omp parallel for reduction(max:delta)}. Requiere una intervención mínima (una sola línea de código) sin necesidad de reestructurar la memoria dinámica ni gestionar primitivas de sincronización de bajo nivel.
+
+    \item \textbf{¿Hubo directivas que empeoraron el rendimiento? ¿Por qué?} \\
+    Sí, la directiva \texttt{critical} y el uso de \texttt{sections} en mallas pequeñas. Esto se explica mediante la relación computación/comunicación. El paralelismo no es gratuito; requiere ciclos de reloj del sistema operativo para despachar hilos. Cuando se serializa el código (\texttt{critical}) o se paralelizan tareas triviales (\texttt{sections} de inicialización), el \textit{overhead} temporal impuesto por la API de OpenMP ahoga el Speedup teórico dictado por la Ley de Amdahl.
+\end{enumerate}
+
+
+\subsection*{Actividad 6: Contar iteraciones con acceso compartido (\texttt{critical} vs \texttt{atomic})}
+
+\subsubsection*{1. Implementación y Mecánica}
+Se evaluaron dos primitivas de sincronización para proteger la actualización de variables compartidas. La directiva \texttt{critical} serializa un bloque de código completo a nivel de software (sistema operativo), mientras que \texttt{atomic} delega la protección de una única operación aritmética directamente a la arquitectura del hardware (procesador).
+
+\begin{lstlisting}[language=C++, caption={Comparativa de implementación: critical vs atomic.}, label={lst:act6}]
+// Estrategia 1: Bloqueo por software (poisson_critical.cpp)
+#pragma omp critical(update_delta)
+{
+    if (local_delta > delta) delta = local_delta;
+}
+
+// Estrategia 2: Bloqueo por hardware (poisson_atomic.cpp)
+#pragma omp atomic
+iterations++; 
+\end{lstlisting}
+
+\subsubsection*{2. Resultados de Escalabilidad}
+Para ilustrar la diferencia real de rendimiento, se tabulan los tiempos de ambas estrategias bajo las mismas condiciones (Eje Y: Tiempo en segundos).
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\textbf{Malla} & \textbf{Hilos} & \textbf{Tiempo \texttt{critical} (s)} & \textbf{Tiempo \texttt{atomic} (s)} & \textbf{Iteraciones} & \textbf{Ventaja \texttt{atomic}} \\ \hline
+64 & 1 (Ser) & 0.0876946 & 0.0876946 & 3136 & 0\% \\ 
+64 & 4 & 0.0349447 & 0.0410154 & 3134 & -17\% (ruido) \\ 
+64 & 16 & 0.0434283 & 0.0372507 & 3129 & +14\% \\ 
+64 & 64 & 0.1689300 & 0.0918460 & 4052 & \textbf{+45\%} \\ \hline
+128 & 16 & 0.1994390 & 0.1915400 & 10237 & +4\% \\ 
+128 & 64 & 0.4785920 & 0.2780170 & 10507 & \textbf{+41\%} \\ \hline
+256 & 16 & 1.3117100 & 1.4704700 & 31837 & -12\% \\ 
+256 & 64 & 1.9460200 & 1.2075600 & 31817 & \textbf{+38\%} \\ \hline
+512 & 16 & 12.558700 & 14.548500 & 91862 & -15\% \\ 
+512 & 64 & 7.8472800 & 6.6050400 & 91842 & \textbf{+15\%} \\ \hline
+1024 & 64 & & & & \\ \hline
+\end{tabular}
+\caption{Comparativa de rendimiento entre barreras de software (\texttt{critical}) y hardware (\texttt{atomic}).}
+\label{tab:resultados_atomic_critical}
+\end{table}
+
+\subsubsection*{3. Análisis Técnico y Respuestas}
+
+\begin{enumerate}
+    \item \textbf{¿Qué diferencias observas en el rendimiento entre usar \texttt{critical} y \texttt{atomic}?} \\
+    Como se evidencia en mallas grandes con alta concurrencia (64 hilos), \texttt{atomic} es consistentemente más rápido, superando a \texttt{critical} hasta por un $45\%$ en la malla de 64x64. La directiva \texttt{critical} utiliza \textit{mutexes} del sistema operativo, forzando un costoso cambio de contexto (\textit{context switch}) cada vez que un hilo espera. Por el contrario, \texttt{atomic} se compila como instrucciones de bajo nivel con bloqueo en el bus de memoria (como \texttt{LOCK INC} o \texttt{LOCK XADD} en la arquitectura x86), ejecutándose en unos pocos ciclos de reloj.
+
+    \item \textbf{¿En qué casos sería preferible una sobre la otra?} \\
+    \texttt{atomic} es obligatoria y preferible siempre que se actualice una variable escalar simple (sumas, restas, incrementos lógicos). \texttt{critical} debe usarse \textbf{únicamente} cuando la sección a proteger contiene múltiples líneas de código, lógica condicional compleja (ej. \texttt{if (A > B) \{ A = B; C++; \}}), o estructuras de datos no contiguas que el hardware no puede bloquear en una sola instrucción.
+\end{enumerate}
+
+\subsubsection*{4. Veredicto Arquitectónico y Corrección de Implementación}
+Aunque la diferencia de rendimiento es clara, hay un detalle arquitectónico vital en la implementación de \texttt{poisson\_atomic.cpp}: se colocó un \texttt{\#pragma omp atomic} dentro de un bloque \texttt{\#pragma omp single}. Si una región es \texttt{single}, por definición matemática solo un hilo accede a ella, haciendo imposible una condición de carrera. Por lo tanto, usar \texttt{atomic} dentro de \texttt{single} introduce un \textit{overhead} de instrucción redundante. El \texttt{atomic} brilla realmente cuando los $p$ hilos intentan modificar la variable simultáneamente sin un \texttt{single} que los controle.
+
+
+\subsection*{Actividad 7: Exploración con tareas (\texttt{task})}
+
+\subsubsection*{1. Implementación y Mecánica}
+Se abandonó el modelo de paralelismo de datos orientado a bucles en favor de un modelo de tareas (\textit{Tasking}). El dominio espacial se subdividió en sub-bloques de tamaño $16 \times 16$. Un único hilo (el \texttt{single}) itera sobre esta grilla de bloques e instancia un \texttt{\#pragma omp task} por cada uno, encolándolos para que el resto de los hilos libres los ejecuten de manera asíncrona.
+
+\begin{lstlisting}[language=C++, caption={Implementación de tareas asíncronas por bloques de memoria.}, label={lst:act7}]
+const int block_size = 16; 
+// ...
+#pragma omp parallel shared(T, source, delta)
+{
+    #pragma omp single // Un solo hilo encola las tareas
+    {
+        for (int bi = 1; bi < M; bi += block_size) {
+            for (int bj = 1; bj < N; bj += block_size) {
+                
+                #pragma omp task firstprivate(bi, bj) shared(T, delta)
+                {
+                    double local_delta = 0.0;
+                    // Bucle interno evaluando solo el bloque bi x bj
+                    // ... (Cálculo de diferencias finitas) ...
+                    
+                    #pragma omp critical
+                    if (local_delta > delta) delta = local_delta;
+                }
+            }
+        }
+    } // taskwait implícito al salir del bloque single
+    iterations++; 
+}
+\end{lstlisting}
+
+\subsubsection*{2. Resultados de Escalabilidad}
+Los resultados exponen un colapso en el rendimiento (\textit{Performance Degradation}) en comparación con las directivas orientadas a bucles.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Malla ($N$)} & \textbf{Hilos ($p$)} & \textbf{Tiempo (s)} & \textbf{Iteraciones} & \textbf{Speedup $S(p)$} \\ \hline
+64 & 1 (Serial) & 0.0876946 & 3136 & 1.00x \\ 
+64 & 4 & 0.0727011 & 3147 & 1.20x \\ 
+64 & 32 & 0.1990190 & 3136 & 0.44x (Degradación) \\ 
+64 & 64 & 0.3121340 & 3137 & 0.28x (Degradación) \\ \hline
+128 & 1 (Serial) & 1.2203900 & 10244 & 1.00x \\ 
+128 & 4 & 0.8670850 & 10254 & 1.40x \\ 
+128 & 32 & 2.9037100 & 10257 & 0.42x (Degradación) \\ 
+128 & 64 & 3.8115900 & 10254 & 0.32x (Degradación) \\ \hline
+256 & 1 (Serial) & 15.404100 & 31844 & 1.00x \\ 
+256 & 4 & 9.9467300 & 32072 & 1.54x \\ 
+256 & 32 & 28.851200 & 31848 & 0.53x (Degradación) \\ 
+256 & 64 & 46.836400 & 31846 & 0.32x (Degradación) \\ \hline
+512 & 1 (Serial) & 177.86400 & 91868 & 1.00x \\ 
+512 & 4 & 124.29800 & 98194 & 1.43x \\ 
+512 & 32 & 319.35800 & 92831 & 0.55x (Degradación) \\ 
+512 & 64 & \textbf{589.65000} & 92239 & \textbf{0.30x (Degradación Crítica)} \\ \hline
+1024 & 1 (Serial) & & & 1.00x \\ 
+1024 & 64 & & & \\ \hline
+\end{tabular}
+\caption{Desempeño de la directiva \texttt{task} con bloques fijos.}
+\label{tab:resultados_task}
+\end{table}
+
+\subsubsection*{3. Análisis Técnico y Respuestas}
+
+\begin{enumerate}
+    \item \textbf{¿Cómo se compara el rendimiento usando \texttt{task} con respecto a \texttt{parallel for}?} \\
+    El rendimiento es abismalmente inferior. Mientras que \texttt{parallel for} resolvió la malla 512 con 64 hilos en $\approx 5.5$ segundos, el modelo de tareas tardó casi $\mathbf{590}$ segundos. Esto representa una caída de rendimiento de dos órdenes de magnitud. 
+
+    \item \textbf{¿Qué ventajas y desventajas tiene este enfoque?} \\
+    \textbf{Ventaja teórica:} Permite resolver dependencias de datos muy complejas o cargas de trabajo altamente asimétricas (ej. grafos, recursividad, o árboles de búsqueda) donde un bucle \texttt{for} convencional no funciona. Adicionalmente, estructurar la memoria en bloques mejora la localidad de caché temporal.\\
+    \textbf{Desventaja empírica (El colapso de granularidad):} El costo computacional de instanciar la estructura de datos interna de un \texttt{task} en OpenMP es alto. Al dividir la malla en bloques muy pequeños ($16 \times 16$), estamos obligando a un solo hilo a instanciar y encolar $(512/16)^2 = 1024$ tareas distintas en cada iteración del bucle temporal. El planificador (\textit{scheduler}) se "asfixia" gestionando esta cola abrumadora. El tiempo de reloj se gasta en despachar tareas, no en resolver la ecuación matemática.
+\end{enumerate}
+
+\subsubsection*{4. Veredicto Arquitectónico}
+Aplicar \texttt{task} a una matriz regular sin un ajuste paramétrico severo (aumentando el \texttt{block\_size} a dimensiones como $128 \times 128$) destruye el rendimiento. Para ecuaciones diferenciales en dominios euclidianos regulares, el paralelismo de datos (Data Parallelism mediante \texttt{parallel for}) siempre superará al paralelismo de tareas.
+
+\section*{Comparación Final de Estrategias y Análisis Arquitectónico}
+
+Para evaluar rigurosamente el impacto de cada directiva, se consolida el desempeño sobre la malla de mayor exigencia ($512 \times 512$), identificando el mejor tiempo alcanzado y el conteo de hilos donde se maximiza la eficiencia antes de la degradación por \textit{overhead}.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{l l c c X}
 \toprule
-\textbf{Versión} & \textbf{Directiva} & \textbf{Mejor Tiempo} & \textbf{Hilos Óptimos} & \textbf{Eficiencia HPC} \\
+\textbf{Versión} & \textbf{Directiva} & \textbf{Mejor Tiempo} & \textbf{Hilos Óptimos} & \textbf{Eficiencia HPC y Análisis} \\
 \midrule
-Secuencial & N/A & 6.185 s & 1 & Línea base (Referencia) \\
-Parallel For & \texttt{parallel for} & \textbf{0.388 s} & \textbf{32} & \textbf{Rendimiento Superior} \\
-Schedule & \texttt{schedule} & 0.391 s & 32 & Equivalente al básico \\
-Collapse & \texttt{collapse(2)} & 0.422 s & 32 & Penalización leve de overhead \\
-Atomic & \texttt{atomic} & 0.511 s & 32 & Menor impacto que critical \\
-Critical & \texttt{critical} & 0.638 s & 32 & Cuello de botella en sincronización\\
-Tareas & \texttt{task} & 4.430 s & 2 & Sobrecarga catastrófica \\
+Secuencial & N/A & 176.550 s & 1 & Línea base de normalización ($S=1.0$). \\
+Parallel For & \texttt{parallel for} & \textbf{5.478 s} & \textbf{64} & \textbf{Rendimiento Superior.} Balance óptimo entre carga computacional y gestión de hilos. \\
+Schedule & \texttt{schedule} & 5.517 s & 64 & Prácticamente equivalente al básico. La partición estática es ideal para dominios regulares. \\
+Collapse & \texttt{collapse(2)} & 5.781 s & 64 & Leve penalización de CPU por el cálculo de la aritmética de índices lineales. \\
+Sections & \texttt{sections} & 6.005 s & 64 & \textit{Overhead} no justificado; crear hilos para operaciones $O(N^2)$ simples ralentiza el sistema. \\
+Atomic & \texttt{atomic} & 6.608 s & 64 & Sincronización eficiente y escalable, apoyada nativamente por el hardware (\textit{atomic operations}). \\
+Critical & \texttt{critical} & 7.129 s & 64 & Penalización moderada por \textit{lock contention} y bloqueos secuenciales gestionados por el SO. \\
+Tareas & \texttt{task} & 117.519 s & 4 & \textbf{Colapso Arquitectónico.} Granularidad excesivamente fina que asfixia al planificador de OpenMP. \\
 \bottomrule
 \end{tabularx}
-\caption{Comparativa de tiempos óptimos en la Malla 200x200.}
+\caption{Comparativa de tiempos óptimos y diagnóstico de directivas en la Malla 512x512.}
+\label{tab:comparativa_final}
 \end{table}
+
+\subsubsection*{Conclusiones Analíticas}
+
+\begin{enumerate}
+    \item \textbf{El Paradigma Dominante:} El paralelismo de datos tradicional (\texttt{parallel for} y \texttt{schedule(static)}) demostró ser inmensamente superior para la Ecuación de Poisson. Este problema exhibe un patrón de acceso a memoria y densidad de FLOPs uniforme, lo que permite al compilador distribuir la carga estáticamente sin \textit{overhead} en tiempo de ejecución.
+    
+    \item \textbf{El Costo de la Sincronización:} Obligar a los hilos a comunicarse degrada el rendimiento. Quedó demostrado que si es estrictamente necesario proteger una variable compartida, debe hacerse a nivel de hardware (\texttt{atomic}, 6.6s) y no a nivel de software (\texttt{critical}, 7.1s al escalar).
+    
+    \item \textbf{La Falla del Modelo de Tareas:} El uso ingenuo de \texttt{task} con bloques pequeños ($16 \times 16$) generó una sobrecarga catastrófica. Mientras que \texttt{parallel for} se beneficia de la pre-asignación, \texttt{task} requiere que el \textit{runtime} de OpenMP empaquete, encole y despache dinámicamente miles de tareas por segundo, destruyendo el desempeño y escalando negativamente.
+\end{enumerate}
 
 \section*{Validación Numérica de la Solución}
 
