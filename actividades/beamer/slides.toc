@@ -1,0 +1,14 @@
+\babel@toc {spanish}{}\relax 
+\beamer@sectionintoc {1}{Objetivo y Sistema HPC}{3}{0}{1}
+\beamer@sectionintoc {2}{Código Base Secuencial}{5}{0}{2}
+\beamer@sectionintoc {3}{Análisis de Escalabilidad}{6}{0}{3}
+\beamer@sectionintoc {4}{Actividad 1 — \texttt {parallel for}}{7}{0}{4}
+\beamer@sectionintoc {5}{Actividad 2 — \texttt {collapse(2)}}{8}{0}{5}
+\beamer@sectionintoc {6}{Actividad 3 — \texttt {sections}}{9}{0}{6}
+\beamer@sectionintoc {7}{Actividad 4 — \texttt {schedule}}{10}{0}{7}
+\beamer@sectionintoc {8}{Actividad 5 — Sincronización Explícita}{11}{0}{8}
+\beamer@sectionintoc {9}{Actividad 6 — \texttt {critical} vs \texttt {atomic}}{12}{0}{9}
+\beamer@sectionintoc {10}{Actividad 7 — \texttt {task}}{13}{0}{10}
+\beamer@sectionintoc {11}{Comparación Final}{14}{0}{11}
+\beamer@sectionintoc {12}{Validación Numérica}{15}{0}{12}
+\beamer@sectionintoc {13}{Conclusiones}{16}{0}{13}
